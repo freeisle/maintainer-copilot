@@ -1,0 +1,12 @@
+# 目标仓库配置（演示与真实使用）
+repos:
+  - owner: freeisle
+    repo: ragent
+    default_branch: main
+    skill: ragent        # 对应 skills/{name}/ 目录
+    enabled: true
+  - owner: freeisle
+    repo: "12306"
+    default_branch: main
+    skill: "12306"
+    enabled: true

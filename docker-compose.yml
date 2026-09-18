@@ -1,0 +1,28 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: mc-pgvector
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: maintainer_copilot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 可选: 本地 LLM 兜底(断网演示不翻车)
+  # ollama:
+  #   image: ollama/ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama:/root/.ollama
+
+  # 可选: 评测追踪面板(Sprint 2 有余力再上, 自托管 Langfuse)
+  # langfuse:
+  #   image: langfuse/langfuse:latest
+  #   ports:
+  #     - "3000:3000"
+
+volumes:
+  pgdata:

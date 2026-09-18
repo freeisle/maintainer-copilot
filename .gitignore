@@ -1,0 +1,38 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- 环境与密钥 ---
+.env
+*.pem
+
+# --- 数据与模型(大文件不入库) ---
+data/
+models_cache/
+*.db
+*.sqlite3
+
+# --- 日志 ---
+logs/
+*.log
+
+# --- 个人开发决策记录(本地私有, 不入库) ---
+devlog/
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+
+# --- 未来 Java 工具服务模块(预留) ---
+target/
+*.class
+*.jar

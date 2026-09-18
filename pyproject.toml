@@ -1,0 +1,55 @@
+[project]
+name = "maintainer-copilot"
+version = "0.1.0"
+description = "AI copilot for open-source maintainers: issue triage, repo-grounded Q&A, PR first-pass review — with HITL gate and evaluation suite"
+readme = "README.md"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+dependencies = [
+    "langgraph>=1.0",
+    "openai>=1.60",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "httpx>=0.28",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "pyyaml>=6.0",
+    "fastmcp>=2.0",
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3",
+]
+
+# RAG 重依赖(embedding/rerank/tree-sitter): 与核心依赖分层, 避免首日下载数 GB 模型栈
+[project.optional-dependencies]
+rag = [
+    "sentence-transformers>=3.0",
+    "rank-bm25>=0.2.2",
+    "tree-sitter>=0.23",
+    "tree-sitter-java>=0.23",
+    "tree-sitter-python>=0.23",
+    "tree-sitter-typescript>=0.23",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "respx>=0.22",
+]
+
+[project.scripts]
+mc = "maintainer_copilot.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/maintainer_copilot"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.uv]
+default-groups = ["dev"]

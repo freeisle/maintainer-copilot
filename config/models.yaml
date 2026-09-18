@@ -1,0 +1,14 @@
+# 模型提供商配置
+llm:
+  primary: deepseek-chat
+  fallback: qwen2.5:7b
+
+embedding:
+  # local = sentence-transformers 本地 bge-m3(默认, 首次运行自动下载 ~2.3GB)
+  # api   = OpenAI 兼容 embeddings 接口(无 GPU / 磁盘紧张时切换, D3 补齐)
+  provider: local
+  model: BAAI/bge-m3
+
+rerank:
+  provider: local
+  model: BAAI/bge-reranker-v2-m3
