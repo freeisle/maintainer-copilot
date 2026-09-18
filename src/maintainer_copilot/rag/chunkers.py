@@ -30,13 +30,22 @@ class DocChunker:
             body = text[pos:end].strip()
             if not body:
                 continue
-            for sub in self._hard_split(body):
+            for idx, sub in enumerate(self._hard_split(body)):
                 chunks.append(
-                    Chunk(text=sub, source="doc", meta={"path": path, "heading": title, "level": level})
+                    Chunk(
+                        text=sub,
+                        source="doc",
+                        meta={
+                            "path": path,
+                            "heading": title,
+                            "level": level,
+                            "part_idx": idx,  # 硬切分段序号: 保证逻辑主键唯一
+                        },
+                    )
                 )
         if not positions and text.strip():
-            for sub in self._hard_split(text.strip()):
-                chunks.append(Chunk(text=sub, source="doc", meta={"path": path}))
+            for idx, sub in enumerate(self._hard_split(text.strip())):
+                chunks.append(Chunk(text=sub, source="doc", meta={"path": path, "part_idx": idx}))
         return chunks
 
     def _hard_split(self, body: str) -> list[str]:
