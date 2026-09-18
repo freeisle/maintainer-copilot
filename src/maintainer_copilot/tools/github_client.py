@@ -38,11 +38,25 @@ class GitHubClient:
 
     # ---------- 通用请求 ----------
 
+    @staticmethod
+    def _cache_key(url: str, kw: dict) -> str:
+        """缓存键必须包含查询参数与请求体, 否则分页请求互相串缓存。"""
+        key = url
+        for field in ("params", "json"):
+            value = kw.get(field)
+            if value is None:
+                continue
+            if isinstance(value, dict):
+                value = tuple(sorted(value.items()))
+            key += f"|{field}={value}"
+        return key
+
     async def _request(
         self, method: str, url: str, *, cache_ttl: float = 0.0, **kw: Any
     ) -> Any:
         if cache_ttl > 0:
-            hit = self._cache.get(url)
+            cache_key = self._cache_key(url, kw)
+            hit = self._cache.get(cache_key)
             if hit and hit[0] > time.monotonic():
                 return hit[1]
         async with httpx.AsyncClient(headers=self.headers, timeout=self.timeout) as client:
@@ -55,7 +69,7 @@ class GitHubClient:
                     resp.raise_for_status()
                     data = resp.json() if resp.content else {}
                     if cache_ttl > 0:
-                        self._cache[url] = (time.monotonic() + cache_ttl, data)
+                        self._cache[self._cache_key(url, kw)] = (time.monotonic() + cache_ttl, data)
                     return data
                 except RateLimitExceeded:
                     raise  # 不重试, 交给工具层降级
@@ -89,6 +103,17 @@ class GitHubClient:
 
     async def get_issue(self, repo: str, number: int) -> dict:
         return await self._request("GET", f"{GITHUB_API}/repos/{repo}/issues/{number}", cache_ttl=300)
+
+    async def list_issues(
+        self, repo: str, state: str = "all", page: int = 1, per_page: int = 100
+    ) -> list[dict]:
+        """分页列出 issue(含 PR, 调用方需按 pull_request 键过滤)。"""
+        return await self._request(
+            "GET",
+            f"{GITHUB_API}/repos/{repo}/issues",
+            params={"state": state, "page": page, "per_page": per_page},
+            cache_ttl=60,
+        )
 
     async def list_comments(self, repo: str, number: int) -> list[dict]:
         return await self._request(

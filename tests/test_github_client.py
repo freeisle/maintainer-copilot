@@ -45,3 +45,20 @@ async def test_rate_limit_header_tracking() -> None:
         client = GitHubClient(token="test")
         await client.get_issue("x/y", 1)
         assert client.rate_remaining == 42
+
+
+@pytest.mark.asyncio
+async def test_cache_key_includes_params() -> None:
+    """回归测试: 不同分页参数的请求不得互相命中缓存(曾导致分页死循环)。"""
+    url = "https://api.github.com/repos/x/y/issues"
+    with respx.mock() as mock:
+        route = mock.get(url)
+        route.side_effect = [
+            httpx.Response(200, json=[{"number": 1}]),
+            httpx.Response(200, json=[{"number": 2}]),
+        ]
+        client = GitHubClient(token="test")
+        page1 = await client.list_issues("x/y", page=1, per_page=100)
+        page2 = await client.list_issues("x/y", page=2, per_page=100)
+    assert page1 == [{"number": 1}]
+    assert page2 == [{"number": 2}]
