@@ -46,20 +46,16 @@ def collect_code(root: Path) -> list[tuple[str, str]]:
 async def ingest_docs(
     indexer: Indexer, repo: str, doc_dir: str, commit_sha: str | None = None
 ) -> tuple[int, dict]:
+    """先切分全部文档, 再一次性批量嵌入 upsert。"""
     chunker = DocChunker()
-    total_chunks = 0
-    stats_agg = {"inserted": 0, "updated": 0, "unchanged": 0}
     docs = collect_docs(Path(doc_dir))
-    logger.info("%s: 发现 %d 个文档文件", repo, len(docs))
+    logger.info("%s: 发现 %d 个文档文件, 切分中...", repo, len(docs))
+    all_chunks: list = []
     for rel, text in docs:
-        chunks = chunker.split(text, rel)
-        if not chunks:
-            continue
-        stats = await indexer.upsert_chunks(repo, chunks, commit_sha)
-        for k in stats_agg:
-            stats_agg[k] += stats[k]
-        total_chunks += len(chunks)
-    return total_chunks, stats_agg
+        all_chunks.extend(chunker.split(text, rel))
+    logger.info("%s: 切分出 %d 个 chunk, 批量嵌入入库...", repo, len(all_chunks))
+    stats = await indexer.upsert_chunks(repo, all_chunks, commit_sha)
+    return len(all_chunks), stats
 
 
 async def ingest_issues(
@@ -76,20 +72,16 @@ async def ingest_issues(
 async def ingest_code(
     indexer: Indexer, repo: str, code_dir: str, commit_sha: str | None = None
 ) -> tuple[int, dict]:
+    """先切分全部文件, 再一次性批量嵌入 upsert(避免逐文件 encode 的会话开销)。"""
     chunker = CodeChunker()
-    stats_agg = {"inserted": 0, "updated": 0, "unchanged": 0}
     files = collect_code(Path(code_dir))
-    logger.info("%s: 发现 %d 个代码文件", repo, len(files))
-    total_chunks = 0
+    logger.info("%s: 发现 %d 个代码文件, 切分中...", repo, len(files))
+    all_chunks: list = []
     for rel, text in files:
-        chunks = chunker.split(text, rel)
-        if not chunks:
-            continue
-        stats = await indexer.upsert_chunks(repo, chunks, commit_sha)
-        for k in stats_agg:
-            stats_agg[k] += stats[k]
-        total_chunks += len(chunks)
-    return total_chunks, stats_agg
+        all_chunks.extend(chunker.split(text, rel))
+    logger.info("%s: 切分出 %d 个 chunk, 批量嵌入入库...", repo, len(all_chunks))
+    stats = await indexer.upsert_chunks(repo, all_chunks, commit_sha)
+    return len(all_chunks), stats
 
 
 def main() -> None:
