@@ -52,11 +52,14 @@ def chunk_id(repo: str, chunk: Chunk) -> str:
 
 
 def _chunk_location(chunk: Chunk) -> str:
-    """按源类型生成位置描述: issue 用编号+部分, 文档用路径+标题+分段序号。"""
+    """按源类型生成位置描述: issue 用编号+部分, 代码用符号+行号+分段, 文档用路径+标题+分段。"""
     if chunk.source == "issue":
         return f"issue#{chunk.meta.get('issue', '')}:{chunk.meta.get('part', '')}"
     if chunk.source == "code":
-        return f"{chunk.meta.get('path', '')}#{chunk.meta.get('symbol', '')}#{chunk.meta.get('start', '')}"
+        return (
+            f"{chunk.meta.get('path', '')}#{chunk.meta.get('symbol', '')}"
+            f"#{chunk.meta.get('start', '')}#{chunk.meta.get('part_idx', 0)}"
+        )
     return (
         f"{chunk.meta.get('path', '')}#{chunk.meta.get('heading', '')}"
         f"#{chunk.meta.get('part_idx', 0)}"

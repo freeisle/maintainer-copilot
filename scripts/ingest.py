@@ -14,7 +14,7 @@ import logging
 from pathlib import Path
 
 from maintainer_copilot.config import get_settings
-from maintainer_copilot.rag.chunkers import DocChunker, IssueChunker
+from maintainer_copilot.rag.chunkers import CodeChunker, DocChunker, IssueChunker
 from maintainer_copilot.rag.embedder import Embedder
 from maintainer_copilot.rag.indexer import Indexer
 
@@ -22,12 +22,22 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 DOC_SUFFIXES = {".md", ".mdx", ".rst", ".txt", ".adoc"}
+CODE_SUFFIXES = {".java", ".py", ".ts", ".tsx", ".js"}
 
 
 def collect_docs(root: Path) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     for p in sorted(root.rglob("*")):
-        if p.is_file() and p.suffix.lower() in DOC_SUFFIXES:
+        if p.is_file() and p.suffix.lower() in DOC_SUFFIXES and ".git" not in p.parts:
+            rel = str(p.relative_to(root)).replace("\\", "/")
+            out.append((rel, p.read_text(encoding="utf-8", errors="replace")))
+    return out
+
+
+def collect_code(root: Path) -> list[tuple[str, str]]:
+    out: list[tuple[str, str]] = []
+    for p in sorted(root.rglob("*")):
+        if p.is_file() and p.suffix.lower() in CODE_SUFFIXES and ".git" not in p.parts:
             rel = str(p.relative_to(root)).replace("\\", "/")
             out.append((rel, p.read_text(encoding="utf-8", errors="replace")))
     return out
@@ -63,6 +73,25 @@ async def ingest_issues(
     return len(chunks), stats
 
 
+async def ingest_code(
+    indexer: Indexer, repo: str, code_dir: str, commit_sha: str | None = None
+) -> tuple[int, dict]:
+    chunker = CodeChunker()
+    stats_agg = {"inserted": 0, "updated": 0, "unchanged": 0}
+    files = collect_code(Path(code_dir))
+    logger.info("%s: 发现 %d 个代码文件", repo, len(files))
+    total_chunks = 0
+    for rel, text in files:
+        chunks = chunker.split(text, rel)
+        if not chunks:
+            continue
+        stats = await indexer.upsert_chunks(repo, chunks, commit_sha)
+        for k in stats_agg:
+            stats_agg[k] += stats[k]
+        total_chunks += len(chunks)
+    return total_chunks, stats_agg
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="三源异构入库")
     parser.add_argument("--repo", required=True, help="逻辑知识库键, 如 freeisle/ragent")
@@ -87,8 +116,11 @@ def main() -> None:
                 parser.error("--kind docs 需要 --dir")
             total, stats = await ingest_docs(indexer, args.repo, args.dir, args.commit_sha)
             logger.info("docs 入库完成: %d chunks %s", total, stats)
-        else:
-            logger.warning("code 入库在 D4 实现(tree-sitter AST 切分)")
+        else:  # code
+            if not args.dir:
+                parser.error("--kind code 需要 --dir")
+            total, stats = await ingest_code(indexer, args.repo, args.dir, args.commit_sha)
+            logger.info("code 入库完成: %d chunks %s", total, stats)
         logger.info("当前 %s 总 chunk 数: %d", args.repo, await indexer.count(args.repo))
 
     asyncio.run(run())

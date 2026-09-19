@@ -6,8 +6,9 @@ TODO(D5): LLM 改写(术语补全、多意图拆分)。
 import re
 
 _ERR_PATTERNS = [
-    re.compile(r"(?i)(exception|error|failed|fatal|traceback)[^\n]{0,200}"),
-    re.compile(r"(?i)(caused by|cannot|unable to)[^\n]{0,120}"),
+    # [\w.$]* 向前回捕包名/类名, 拿到完整的 java.lang.NullPointerException 而非从 Exception 截断
+    re.compile(r"(?i)[\w.$]*(?:exception|error|failed|fatal|traceback)[^\n]{0,200}"),
+    re.compile(r"(?i)(?:caused by|cannot|unable to)[^\n]{0,120}"),
 ]
 
 
