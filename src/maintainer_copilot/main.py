@@ -33,6 +33,18 @@ async def run_chat() -> None:
         messages.append({"role": "assistant", "content": result.content})
 
 
+async def run_ask(repo: str, question: str) -> None:
+    """代码库问答: SolverWorker 全链路(查询改写 + 混合检索 + 带引用回答)。"""
+    from maintainer_copilot.workers.solver import SolverWorker
+
+    result = await SolverWorker().solve(question, repo)
+    print(result["draft"])
+    if result["citations"]:
+        print("\n--- 引用 ---")
+        for i, c in enumerate(result["citations"], 1):
+            print(f"[{i}] {c['source']}:{c['path']}")
+
+
 async def run_demo_triage(repo: str, issue: int) -> None:
     # TODO(Sprint 2): 真实分诊; 脚手架阶段验证状态机可编译
     graph = build_graph()
@@ -51,6 +63,9 @@ def main() -> None:
     sub.add_parser("chat", help="交互式问答")
     sub.add_parser("serve", help="启动 Web 服务(审核台+webhook)")
     sub.add_parser("mcp", help="MCP stdio 模式启动工具服务")
+    ask = sub.add_parser("ask", help="代码库问答(带引用)")
+    ask.add_argument("--repo", required=True)
+    ask.add_argument("question")
     demo = sub.add_parser("demo-triage", help="对指定 issue 跑分诊")
     demo.add_argument("repo")
     demo.add_argument("issue", type=int)
@@ -69,6 +84,8 @@ def main() -> None:
         from maintainer_copilot.tools.mcp_server import build_mcp_server
 
         build_mcp_server().run(transport="stdio")
+    elif args.cmd == "ask":
+        asyncio.run(run_ask(args.repo, args.question))
     elif args.cmd == "demo-triage":
         asyncio.run(run_demo_triage(args.repo, args.issue))
 
