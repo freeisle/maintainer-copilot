@@ -11,7 +11,7 @@ import logging
 import re
 from typing import Any
 
-from ..graph.state import AgentState
+from ..graph.state import AgentState, message_text
 from ..models.llm import ModelProvider
 from ..rag.retriever import HybridRetriever
 
@@ -24,9 +24,16 @@ TRIAGE_PROMPT = """你是开源仓库 {repo} 的维护者助理, 负责新 issue
 请完成三件事:
 1. 分类(四选一): bug(缺陷/异常行为) / feature(新功能请求) / question(使用求助) / invalid(信息不足/与仓库无关/纯重复)
 2. 建议标签: 1-3 个简短英文标签
-3. 回复草稿: 中文, 简洁友好; 信息不足时请求补充复现步骤
+3. 回复草稿(中文, 简洁友好), 必须包含:
+   a. 分类结论与理由(一句话)
+   b. 优先级建议(低/中/高)与下一步动作(请求复现信息/建议提交方向)
+   c. 每条引用资料的具体结论标注编号 [n](n 对应下方资料编号)
+   硬性禁止:
+   - 推测维护者的态度或承诺处理时间; 后续动作一律用条件性表述("若确认…可以…")
+   - 引用用户未提供的事实(如"你已覆盖 4 个测试用例"这类编造)
+   - 引用资料中不存在的代码/配置细节而不标注出处
 
-历史相似 issue(含其标签, 仅供参考):
+检索资料:
 {context}
 
 新 issue:
@@ -53,18 +60,28 @@ class TriageWorker:
     async def triage(
         self, repo: str, title: str, body: str, issue_number: int | None = None, advice: str = ""
     ) -> dict:
-        # 1. 相似历史 issue 检索(历史 label 是分诊的弱标注信号)
+        # 1. 混合检索: 历史 issue(弱标注信号)优先, 代码块次之; 全部编号化供草稿引用
         query = f"{title} {body[:200]}"
-        docs = await self.retriever.retrieve(query, repo, top_k=5, rerank_pool=25)
+        docs = await self.retriever.retrieve(query, repo, top_k=8, rerank_pool=25)
         issue_docs = [d for d in docs if d["source"] == "issue"][:4]
+        code_docs = [d for d in docs if d["source"] == "code"][:2]
+        context_docs = issue_docs + code_docs
         context = (
             "\n\n".join(
-                f"- 标签 {d.get('meta', {}).get('labels', [])}: {d['text'][:200]}"
-                for d in issue_docs
+                f"[{i}] ({d['source']}:{d['path']}) {d['text'][:250]}"
+                for i, d in enumerate(context_docs, 1)
             )
-            if issue_docs
-            else "无相似历史 issue"
+            if context_docs
+            else "无相似历史资料"
         )
+        context_citations = [
+            {
+                "source": d["source"],
+                "path": d["path"],
+                "snippet": d["text"][:300],
+            }
+            for d in context_docs
+        ]
         # 2. LLM 分诊(重写时附上自审建议)
         advice_note = f"\n\n上一稿被驳回, 修改建议: {advice}" if advice else ""
         result = await self.llm.chat(
@@ -90,15 +107,21 @@ class TriageWorker:
                 "confidence": 0.0,
                 "issue_number": issue_number,
                 "similar_issues": [d.get("meta", {}).get("issue") for d in issue_docs],
+                "context_citations": context_citations,
             }
         # 3. 低置信度降级: 只打标签, 不生成回复草稿
         if float(parsed.get("confidence", 0)) < CONFIDENCE_FLOOR:
             logger.info("分诊置信度 %.2f 低于阈值, 仅打标签不生成回复", float(parsed.get("confidence", 0)))
             parsed["reply"] = None
+        logger.info(
+            "分诊完成: category=%s confidence=%s reply长度=%d",
+            parsed.get("category"), parsed.get("confidence"), len(parsed.get("reply") or ""),
+        )
         parsed.setdefault("labels", [])
         parsed.setdefault("category", "invalid")
         parsed["issue_number"] = issue_number
         parsed["similar_issues"] = [d.get("meta", {}).get("issue") for d in issue_docs]
+        parsed["context_citations"] = context_citations
         return parsed
 
 
@@ -119,7 +142,7 @@ async def triage_node(state: AgentState) -> dict[str, Any]:
     title = issue.get("title") or ""
     body = issue.get("body") or ""
     if not title and state.get("messages"):
-        title = str(state["messages"][-1].get("content", ""))
+        title = message_text(state["messages"][-1])
     result = await _get_worker().triage(
         repo, title, body, issue.get("number"), advice=state.get("reflect_advice", "")
     )
@@ -133,5 +156,5 @@ async def triage_node(state: AgentState) -> dict[str, Any]:
             "issue_number": result.get("issue_number"),
             "similar_issues": result.get("similar_issues"),
         },
-        "citations": [],
+        "citations": result.get("context_citations") or [],
     }

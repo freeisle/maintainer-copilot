@@ -8,17 +8,20 @@ import re
 from typing import Any
 
 from ..models.llm import ModelProvider
-from .state import AgentState
+from .state import AgentState, message_text
 
 logger = logging.getLogger(__name__)
 
 MAX_REWRITES = 2
 
-REFLECTION_PROMPT = """你是质量审查员, 对下面的 Agent 草稿做三查:
+REFLECTION_PROMPT = """你是质量审查员, 对下面的 Agent 草稿做三查。
 
-1. 有出处: 草稿中的具体断言(代码细节/配置项/接口名/数据)是否都有引用编号 [n] 支撑? 无引用的具体断言计为问题
-2. 答所问: 是否直接回应了任务? 有无答非所问或遗漏关键信息?
-3. 符合规范: 语气是否符合维护者助理定位? 有无编造事实或承诺无法兑现的行为?
+任务上下文含两部分: 原始任务输入(task_input)与可用引用资料(编号列表 citations)。
+
+审查要点:
+1. 有出处: 草稿中引用资料的具体结论, 编号 [n] 必须与 citations 列表编号一一对应, 且结论与对应资料内容一致; 引用 task_input 本身的信息不算无出处
+2. 答所问: 是否回应了 task_input 的诉求; 对 triage 任务, 分类判断是任务本身, 审查其论证是否基于资料、理由是否充分, 而非要求"被资料证明"
+3. 符合规范: 语气符合维护者助理定位; 不得编造 task_input 与 citations 中都不存在的事实; 不得承诺无法兑现的动作
 
 草稿:
 {content}
@@ -57,10 +60,26 @@ async def reflector_node(state: AgentState) -> dict[str, Any]:
             "reflection": {"passed": False, "issues": ["空草稿(可能已触发低置信度降级)"]},
             "rewrite_count": rewrite_count + 1,
         }
+    # 原始任务输入: 自审需要对照"用户到底说了什么", 避免误判引用
+    task_input: dict[str, Any] = {}
+    issue = state.get("issue") or {}
+    if issue.get("title") or issue.get("body"):
+        task_input = {
+            "issue_title": issue.get("title", ""),
+            "issue_body": (issue.get("body", "") or "")[:500],
+        }
+    elif state.get("messages"):
+        task_input = {"question": message_text(state["messages"][-1])[:500]}
+    # 引用资料: 编号化, 供草稿 [n] 一一核验
+    citation_lines = "\n".join(
+        f"[{i}] ({c.get('source', '')}:{c.get('path', '')}) {c.get('snippet', '')[:150]}"
+        for i, c in enumerate(state.get("citations", []), 1)
+    )
     context = {
         "repo": state.get("repo", ""),
         "task_type": state.get("task_type", ""),
-        "citations": [c.get("path", "") for c in state.get("citations", [])],
+        "task_input": task_input,
+        "citations": citation_lines or "(无引用资料)",
     }
     result = await _get_llm().chat(
         [
@@ -77,6 +96,7 @@ async def reflector_node(state: AgentState) -> dict[str, Any]:
         logger.warning("自审输出不可解析, 保守判不过: %s", exc)
         parsed = {"passed": False, "issues": ["自审输出不可解析"], "rewrite_suggestion": ""}
     passed = bool(parsed.get("passed", False))
+    logger.info("自审结果: passed=%s issues=%s", passed, parsed.get("issues", []))
     updates: dict[str, Any] = {
         "reflection": {"passed": passed, "issues": parsed.get("issues", [])},
     }

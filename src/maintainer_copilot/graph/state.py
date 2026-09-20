@@ -12,7 +12,7 @@
 - rewrite_count: 重写次数（>=2 走降级）
 - final_action: Executor 执行结果（仅批准后填充）
 """
-from typing import Annotated, TypedDict
+from typing import Annotated, Any, TypedDict
 
 from langgraph.graph.message import add_messages
 
@@ -21,6 +21,19 @@ class Citation(TypedDict, total=False):
     source: str  # code | doc | issue
     path: str  # 文件路径或 issue 编号
     snippet: str  # 引用片段
+
+
+def message_text(msg: Any) -> str:
+    """取消息文本: add_messages 会把 dict 还原成 HumanMessage 对象, 需兼容两种形态。"""
+    if isinstance(msg, dict):
+        return str(msg.get("content", ""))
+    content = getattr(msg, "content", "")
+    if isinstance(content, list):  # 多模态内容块
+        return " ".join(
+            str(block.get("text", "")) if isinstance(block, dict) else str(block)
+            for block in content
+        )
+    return str(content)
 
 
 class AgentState(TypedDict, total=False):

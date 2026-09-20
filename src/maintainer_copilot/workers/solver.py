@@ -10,7 +10,7 @@ import logging
 import re
 from typing import Any
 
-from ..graph.state import AgentState
+from ..graph.state import AgentState, message_text
 from ..models.llm import ModelProvider
 from ..rag.query_rewriter import QueryRewriter
 from ..rag.retriever import HybridRetriever
@@ -105,7 +105,7 @@ def _get_worker() -> SolverWorker:
 
 
 async def solver_node(state: AgentState) -> dict[str, Any]:
-    question = str(state["messages"][-1].get("content", "")) if state.get("messages") else ""
+    question = message_text(state["messages"][-1]) if state.get("messages") else ""
     repo = state.get("repo", "")
     result = await _get_worker().solve(question, repo, advice=state.get("reflect_advice", ""))
     return {"draft": result["draft"], "citations": result["citations"]}

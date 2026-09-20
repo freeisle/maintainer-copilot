@@ -6,7 +6,7 @@
 import re
 from typing import Any
 
-from .state import AgentState
+from .state import AgentState, message_text
 
 _ISSUE_HINTS = re.compile(r"(issue|问题单|缺陷|#\d+)", re.IGNORECASE)
 _PR_HINTS = re.compile(r"(pull request|merge request|\bpr\b|review)", re.IGNORECASE)
@@ -23,6 +23,5 @@ def route_by_rules(text: str) -> str:
 
 async def route_node(state: AgentState) -> dict[str, Any]:
     # TODO(Sprint 2): 规则置信度低时升级 LLM 精判
-    last = state["messages"][-1] if state.get("messages") else {}
-    text = str(last.get("content", ""))
+    text = message_text(state["messages"][-1]) if state.get("messages") else ""
     return {"task_type": state.get("task_type") or route_by_rules(text)}

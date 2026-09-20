@@ -8,9 +8,12 @@
 """
 import argparse
 import asyncio
+import logging
 
 from maintainer_copilot.graph.supervisor import build_graph
 from maintainer_copilot.models.llm import ModelProvider
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
 
 async def run_chat() -> None:
@@ -46,22 +49,23 @@ async def run_ask(repo: str, question: str) -> None:
 
 
 async def _load_issue(repo: str, issue: int) -> dict:
-    """加载 issue 数据: 优先本地采集, 其次 GitHub API。"""
+    """加载 issue 数据: 全局搜索本地采集文件(知识库键与数据来源解耦), 其次 GitHub API。"""
     import json as _json
     from pathlib import Path
 
     from maintainer_copilot.config import get_settings
     from maintainer_copilot.tools.github_client import GitHubClient
 
-    path = Path("data") / "raw" / f"{repo.replace('/', '__')}-issues.jsonl"
-    if path.exists():
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            item = _json.loads(line)
-            if item["number"] == issue:
-                print("(数据来源: 本地采集)")
-                return item
+    raw_dir = Path("data") / "raw"
+    if raw_dir.exists():
+        for path in sorted(raw_dir.glob("*issues.jsonl")):
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                item = _json.loads(line)
+                if item["number"] == issue:
+                    print(f"(数据来源: 本地采集 {path.name})")
+                    return item
     data = await GitHubClient(token=get_settings().github_token).get_issue(repo, issue)
     print("(数据来源: GitHub API)")
     return data
