@@ -1,14 +1,18 @@
 """FastAPI 服务：webhook 接收 + HITL 审核台 API + 静态页面。
 
-- POST /api/triage: 触发分诊, 状态机跑到 HumanGate 中断, 草稿入待审队列
+- POST /api/triage: 触发分诊, 状态机跑到 HumanGate 中断, 草稿入待审队列(SQLite 持久化)
 - POST /api/approve/{id}: 批准/编辑/驳回 -> Command(resume) 恢复执行 -> Executor 写操作
-- webhook: HMAC-SHA256 签名校验(D8 补幂等去重与事件路由)
+- POST /webhook: HMAC-SHA256 签名校验 + X-GitHub-Delivery 幂等去重;
+  issues.opened 事件路由入分诊图(后台任务)
 """
 import asyncio
 import hmac
 import json
 import logging
+import sqlite3
+import threading
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -25,9 +29,116 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="maintainer-copilot", version="0.1.0")
 
-# HITL 待审队列(D7 内存; D8: SQLite 持久化)
-_PENDING: dict[str, dict] = {}
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+class PendingStore:
+    """HITL 待审队列 + webhook 事件去重, SQLite 持久化(服务重启不丢)。"""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self._lock = threading.Lock()
+        with self._conn() as conn:
+            conn.execute(
+                """CREATE TABLE IF NOT EXISTS pending (
+                    id TEXT PRIMARY KEY, thread_id TEXT, repo TEXT, task_type TEXT,
+                    draft TEXT, citations TEXT, reflection TEXT, status TEXT,
+                    final_action TEXT, created_at TEXT, updated_at TEXT)"""
+            )
+            conn.execute(
+                """CREATE TABLE IF NOT EXISTS webhook_events (
+                    delivery TEXT PRIMARY KEY, event TEXT, repo TEXT, created_at TEXT)"""
+            )
+
+    def _conn(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(str(self.path))
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def add(self, item: dict) -> None:
+        now = _now()
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """INSERT OR REPLACE INTO pending VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    item["id"],
+                    item.get("thread_id", ""),
+                    item.get("repo", ""),
+                    item.get("task_type", ""),
+                    item.get("draft", ""),
+                    json.dumps(item.get("citations") or [], ensure_ascii=False),
+                    json.dumps(item.get("reflection") or {}, ensure_ascii=False),
+                    item.get("status", "pending"),
+                    json.dumps(item.get("final_action"), ensure_ascii=False)
+                    if item.get("final_action")
+                    else None,
+                    now,
+                    now,
+                ),
+            )
+
+    def list(self) -> list[dict]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute("SELECT * FROM pending ORDER BY created_at DESC").fetchall()
+        return [self._row_to_item(r) for r in rows]
+
+    def get(self, item_id: str) -> dict | None:
+        with self._lock, self._conn() as conn:
+            row = conn.execute("SELECT * FROM pending WHERE id = ?", (item_id,)).fetchone()
+        return self._row_to_item(row) if row else None
+
+    def update_status(self, item_id: str, status: str, final_action: dict | None = None) -> None:
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                "UPDATE pending SET status = ?, final_action = ?, updated_at = ? WHERE id = ?",
+                (
+                    status,
+                    json.dumps(final_action, ensure_ascii=False) if final_action else None,
+                    _now(),
+                    item_id,
+                ),
+            )
+
+    def mark_delivery(self, delivery: str, event: str, repo: str) -> bool:
+        """记录 webhook 事件; 已存在返回 False(重复事件)。"""
+        with self._lock, self._conn() as conn:
+            try:
+                conn.execute(
+                    "INSERT INTO webhook_events VALUES (?,?,?,?)",
+                    (delivery, event, repo, _now()),
+                )
+                return True
+            except sqlite3.IntegrityError:
+                return False
+
+    @staticmethod
+    def _row_to_item(row: sqlite3.Row) -> dict:
+        return {
+            "id": row["id"],
+            "thread_id": row["thread_id"],
+            "repo": row["repo"],
+            "task_type": row["task_type"],
+            "draft": row["draft"],
+            "citations": json.loads(row["citations"] or "[]"),
+            "reflection": json.loads(row["reflection"] or "{}"),
+            "status": row["status"],
+            "final_action": json.loads(row["final_action"]) if row["final_action"] else None,
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        }
+
+
+_STORE: PendingStore | None = None
 _GRAPH = None
+
+
+def _store() -> PendingStore:
+    global _STORE
+    if _STORE is None:
+        _STORE = PendingStore(get_settings().data_dir / "pending.sqlite")
+    return _STORE
 
 
 def _get_graph():
@@ -45,6 +156,45 @@ def _extract_interrupt(event: dict) -> Any | None:
     return first.value if hasattr(first, "value") else first
 
 
+async def run_triage_to_gate(
+    repo: str, title: str, body: str, number: int | None = None
+) -> tuple[dict | None, str]:
+    """跑分诊图至 HumanGate 中断; 返回 (闸门载荷或 None, thread_id)。"""
+    thread_id = f"triage-{uuid.uuid4().hex[:12]}"
+    state = {
+        "repo": repo,
+        "task_type": "triage",
+        "issue": {"title": title, "body": body, "number": number},
+        "messages": [{"role": "user", "content": f"分诊: {title}"}],
+    }
+    config = {"configurable": {"thread_id": thread_id}}
+    payload = None
+    async for event in _get_graph().astream(state, config, stream_mode="updates"):
+        payload = _extract_interrupt(event)
+        if payload is not None:
+            break
+    return payload, thread_id
+
+
+async def _triage_background(repo: str, title: str, body: str, number: int | None) -> None:
+    payload, thread_id = await run_triage_to_gate(repo, title, body, number)
+    if payload is None:
+        logger.info("分诊未达闸门(降级), 不入队: %s", title)
+        return
+    _store().add(
+        {
+            "id": thread_id.removeprefix("triage-"),
+            "thread_id": thread_id,
+            "repo": payload.get("repo", repo),
+            "task_type": payload.get("task_type", "triage"),
+            "draft": payload.get("draft", ""),
+            "citations": payload.get("citations", []),
+            "reflection": payload.get("reflection", {}),
+            "status": "pending",
+        }
+    )
+
+
 class TriageRequest(BaseModel):
     repo: str
     title: str
@@ -59,30 +209,16 @@ class ApproveRequest(BaseModel):
 
 @app.get("/api/pending")
 async def list_pending() -> list[dict]:
-    return [{"id": k, **{f: v for f, v in item.items()}} for k, item in _PENDING.items()]
+    return _store().list()
 
 
 @app.post("/api/triage")
 async def create_triage(req: TriageRequest) -> dict:
-    item_id = uuid.uuid4().hex[:12]
-    thread_id = f"triage-{item_id}"
-    state = {
-        "repo": req.repo,
-        "task_type": "triage",
-        "issue": {"title": req.title, "body": req.body, "number": req.number},
-        "messages": [{"role": "user", "content": f"分诊: {req.title}"}],
-    }
-    config = {"configurable": {"thread_id": thread_id}}
-    graph = _get_graph()
-    payload = None
-    async for event in graph.astream(state, config, stream_mode="updates"):
-        payload = _extract_interrupt(event)
-        if payload is not None:
-            break
+    payload, thread_id = await run_triage_to_gate(req.repo, req.title, req.body, req.number)
     if payload is None:
-        # 未到达闸门(降级路径): 直接记录结果
-        return {"ok": True, "id": item_id, "gate": False, "note": "degraded-or-completed"}
-    _PENDING[item_id] = {
+        return {"ok": True, "gate": False, "note": "degraded-or-completed"}
+    item_id = thread_id.removeprefix("triage-")
+    item = {
         "id": item_id,
         "thread_id": thread_id,
         "repo": payload.get("repo", ""),
@@ -92,24 +228,22 @@ async def create_triage(req: TriageRequest) -> dict:
         "reflection": payload.get("reflection", {}),
         "status": "pending",
     }
-    return {"ok": True, "id": item_id, "gate": True, "payload": _PENDING[item_id]}
+    _store().add(item)
+    return {"ok": True, "id": item_id, "gate": True, "payload": item}
 
 
 @app.post("/api/approve/{item_id}")
 async def approve(item_id: str, req: ApproveRequest) -> dict:
-    item = _PENDING.get(item_id)
+    item = _store().get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="待审项不存在")
     decision = {"decision": req.decision, "edited_draft": req.edited_draft}
-    graph = _get_graph()
     config = {"configurable": {"thread_id": item["thread_id"]}}
     final_action: dict = {}
-    async for event in graph.astream(Command(resume=decision), config, stream_mode="updates"):
+    async for event in _get_graph().astream(Command(resume=decision), config, stream_mode="updates"):
         if "executor" in event:
             final_action = event["executor"].get("final_action", {})
-    item["status"] = req.decision
-    item["final_action"] = final_action
-    _PENDING[item_id] = item
+    _store().update_status(item_id, req.decision, final_action)
     return {"ok": True, "id": item_id, "decision": req.decision, "final_action": final_action}
 
 
@@ -127,13 +261,25 @@ async def webhook(request: Request) -> JSONResponse:
     body = await request.body()
     if not _verify_signature(request, body, get_settings().github_webhook_secret):
         return JSONResponse({"ok": False, "error": "signature mismatch"}, status_code=401)
-    # TODO(D8): X-GitHub-Delivery 幂等去重 + 事件路由(issues.opened -> /api/triage 逻辑)
     try:
         payload = json.loads(body)
-        logger.info("webhook 事件: %s #%s", payload.get("action"), payload.get("issue", {}).get("number"))
     except ValueError:
-        logger.warning("webhook body 非 JSON")
-    return JSONResponse({"ok": True})
+        return JSONResponse({"ok": False, "error": "bad json"}, status_code=400)
+    event = request.headers.get("X-GitHub-Event", "")
+    repo = payload.get("repository", {}).get("full_name", "")
+    # 幂等去重: 同一 delivery 只处理一次(webhook 可能重放)
+    delivery = request.headers.get("X-GitHub-Delivery", "")
+    if delivery and not _store().mark_delivery(delivery, event, repo):
+        logger.info("重复 webhook 事件, 忽略: %s", delivery)
+        return JSONResponse({"ok": True, "duplicate": True})
+    if event == "issues" and payload.get("action") == "opened":
+        issue = payload.get("issue", {})
+        logger.info("webhook issues.opened: %s#%s -> 路由分诊", repo, issue.get("number"))
+        asyncio.create_task(
+            _triage_background(repo, issue.get("title", ""), issue.get("body", "") or "", issue.get("number"))
+        )
+        return JSONResponse({"ok": True, "routed": "triage"})
+    return JSONResponse({"ok": True, "ignored": event})
 
 
 _static = Path(__file__).parent / "ui" / "static"
