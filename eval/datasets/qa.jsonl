@@ -1,0 +1,10 @@
+{"repo": "freeisle/12306", "question": "候补购票是怎么实现的？"}
+{"repo": "freeisle/12306", "question": "下单接口怎么防止重复提交？"}
+{"repo": "freeisle/12306", "question": "卧铺铺位偏好分配是怎么处理的？"}
+{"repo": "freeisle/12306", "question": "AI 客服的知识库是怎么检索的？"}
+{"repo": "freeisle/12306", "question": "无票时系统会给出什么建议？"}
+{"repo": "freeisle/ragent", "question": "向量检索是怎么实现的？"}
+{"repo": "freeisle/ragent", "question": "Milvus 数据源怎么配置？"}
+{"repo": "freeisle/ragent", "question": "意图识别是怎么做的？"}
+{"repo": "freeisle/ragent", "question": "文档入库 Pipeline 有哪些节点？"}
+{"repo": "freeisle/ragent", "question": "知识库命中率统计怎么实现的？"}
