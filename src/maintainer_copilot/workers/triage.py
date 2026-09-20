@@ -51,7 +51,7 @@ class TriageWorker:
         self.retriever = retriever or HybridRetriever()
 
     async def triage(
-        self, repo: str, title: str, body: str, issue_number: int | None = None
+        self, repo: str, title: str, body: str, issue_number: int | None = None, advice: str = ""
     ) -> dict:
         # 1. 相似历史 issue 检索(历史 label 是分诊的弱标注信号)
         query = f"{title} {body[:200]}"
@@ -65,14 +65,16 @@ class TriageWorker:
             if issue_docs
             else "无相似历史 issue"
         )
-        # 2. LLM 分诊
+        # 2. LLM 分诊(重写时附上自审建议)
+        advice_note = f"\n\n上一稿被驳回, 修改建议: {advice}" if advice else ""
         result = await self.llm.chat(
             [
                 {
                     "role": "user",
                     "content": TRIAGE_PROMPT.format(
                         repo=repo, context=context, title=title, body=body[:1500] or "(空)"
-                    ),
+                    )
+                    + advice_note,
                 }
             ],
             temperature=0.1,
@@ -118,7 +120,9 @@ async def triage_node(state: AgentState) -> dict[str, Any]:
     body = issue.get("body") or ""
     if not title and state.get("messages"):
         title = str(state["messages"][-1].get("content", ""))
-    result = await _get_worker().triage(repo, title, body, issue.get("number"))
+    result = await _get_worker().triage(
+        repo, title, body, issue.get("number"), advice=state.get("reflect_advice", "")
+    )
     return {
         # 低置信度时 draft 为空 -> Reflector 判不过 -> 走降级仅提示路径
         "draft": result.get("reply") or "",

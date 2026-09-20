@@ -45,14 +45,14 @@ async def run_ask(repo: str, question: str) -> None:
             print(f"[{i}] {c['source']}:{c['path']}")
 
 
-async def run_demo_triage(repo: str, issue: int) -> None:
-    """对指定 issue 跑真实分诊: 优先读本地采集数据, 其次 GitHub API。"""
+async def _load_issue(repo: str, issue: int) -> dict:
+    """加载 issue 数据: 优先本地采集, 其次 GitHub API。"""
     import json as _json
     from pathlib import Path
 
-    from maintainer_copilot.workers.triage import TriageWorker
+    from maintainer_copilot.config import get_settings
+    from maintainer_copilot.tools.github_client import GitHubClient
 
-    issue_data: dict | None = None
     path = Path("data") / "raw" / f"{repo.replace('/', '__')}-issues.jsonl"
     if path.exists():
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -60,16 +60,18 @@ async def run_demo_triage(repo: str, issue: int) -> None:
                 continue
             item = _json.loads(line)
             if item["number"] == issue:
-                issue_data = item
-                break
-    if issue_data is None:
-        from maintainer_copilot.config import get_settings
-        from maintainer_copilot.tools.github_client import GitHubClient
+                print("(数据来源: 本地采集)")
+                return item
+    data = await GitHubClient(token=get_settings().github_token).get_issue(repo, issue)
+    print("(数据来源: GitHub API)")
+    return data
 
-        issue_data = await GitHubClient(token=get_settings().github_token).get_issue(repo, issue)
-        print("(数据来源: GitHub API)")
-    else:
-        print("(数据来源: 本地采集)")
+
+async def run_demo_triage(repo: str, issue: int) -> None:
+    """对指定 issue 跑真实分诊(Worker 直调, 不经 HITL 闸门)。"""
+    from maintainer_copilot.workers.triage import TriageWorker
+
+    issue_data = await _load_issue(repo, issue)
     title = issue_data.get("title", "")
     body = issue_data.get("body", "") or ""
     result = await TriageWorker().triage(repo, title, body, issue)
@@ -84,6 +86,55 @@ async def run_demo_triage(repo: str, issue: int) -> None:
         print("回复草稿: (低置信度降级, 仅打标签)")
 
 
+async def run_demo_hitl(repo: str, issue: int) -> None:
+    """HITL 全链路演示: 分诊 -> Reflector 自审 -> 闸门挂起 -> 人工决策 -> Executor。"""
+    import time
+
+    from langgraph.types import Command
+
+    from maintainer_copilot.graph.supervisor import build_graph
+
+    issue_data = await _load_issue(repo, issue)
+    state = {
+        "repo": repo,
+        "task_type": "triage",
+        "issue": {
+            "title": issue_data.get("title", ""),
+            "body": issue_data.get("body", "") or "",
+            "number": issue,
+        },
+        "messages": [{"role": "user", "content": f"分诊 {repo}#{issue}"}],
+    }
+    graph = build_graph()
+    config = {"configurable": {"thread_id": f"demo-hitl-{repo}-{issue}-{int(time.time())}"}}
+    payload = None
+    async for event in graph.astream(state, config, stream_mode="updates"):
+        inter = event.get("__interrupt__")
+        if inter:
+            first = inter[0] if isinstance(inter, (list, tuple)) else inter
+            payload = first.value if hasattr(first, "value") else first
+            break
+    if payload is None:
+        print("未到达 HITL 闸门(走降级路径, 无草稿可审)")
+        return
+    print("=" * 60)
+    print(f"草稿待审 ({payload.get('task_type')}) 自审: {payload.get('reflection')}")
+    print("-" * 60)
+    print(payload.get("draft", ""))
+    print("-" * 60)
+    choice = input("决策 [a=批准 / e=编辑 / r=驳回]: ").strip().lower()
+    decision: dict = {"decision": "rejected", "edited_draft": None}
+    if choice == "a":
+        decision["decision"] = "approved"
+    elif choice == "e":
+        decision = {"decision": "edited", "edited_draft": input("编辑后文本: ").strip()}
+    final_action: dict = {}
+    async for event in graph.astream(Command(resume=decision), config, stream_mode="updates"):
+        if "executor" in event:
+            final_action = event["executor"].get("final_action", {})
+    print("Executor 结果:", final_action)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="mc", description="Maintainer Copilot")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -96,6 +147,9 @@ def main() -> None:
     demo = sub.add_parser("demo-triage", help="对指定 issue 跑分诊")
     demo.add_argument("repo")
     demo.add_argument("issue", type=int)
+    hitl = sub.add_parser("demo-hitl", help="HITL 全链路演示(分诊->自审->人工决策->执行)")
+    hitl.add_argument("repo")
+    hitl.add_argument("issue", type=int)
     args = parser.parse_args()
 
     if args.cmd == "chat":
@@ -115,6 +169,8 @@ def main() -> None:
         asyncio.run(run_ask(args.repo, args.question))
     elif args.cmd == "demo-triage":
         asyncio.run(run_demo_triage(args.repo, args.issue))
+    elif args.cmd == "demo-hitl":
+        asyncio.run(run_demo_hitl(args.repo, args.issue))
 
 
 if __name__ == "__main__":

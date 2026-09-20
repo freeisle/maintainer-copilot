@@ -53,7 +53,7 @@ class SolverWorker:
         self.rewriter = QueryRewriter(self.llm)
         self.max_context_chunks = max_context_chunks
 
-    async def solve(self, question: str, repo: str) -> dict:
+    async def solve(self, question: str, repo: str, advice: str = "") -> dict:
         # 1. 查询改写: 原问题 + LLM 改写(术语补全/中英变体), 最多 3 条
         queries = [question] + await self.rewriter.rewrite(question)
         # 2. 多查询混合检索
@@ -63,7 +63,8 @@ class SolverWorker:
         docs = merge_results(batches)[: self.max_context_chunks]
         if not docs:
             return {"draft": "依据不足: 未在知识库中检索到相关内容。", "citations": [], "docs": []}
-        # 3. 生成带引用回答
+        # 3. 生成带引用回答(重写时附上自审建议)
+        advice_note = f"\n\n上一稿被驳回, 修改建议: {advice}" if advice else ""
         context = "\n\n".join(
             f"[{i}] ({d['source']}:{d['path']}) {d['text'][:600]}"
             for i, d in enumerate(docs, 1)
@@ -72,7 +73,8 @@ class SolverWorker:
             [
                 {
                     "role": "user",
-                    "content": ANSWER_PROMPT.format(repo=repo, context=context, question=question),
+                    "content": ANSWER_PROMPT.format(repo=repo, context=context, question=question)
+                    + advice_note,
                 }
             ],
             temperature=0.1,
@@ -105,5 +107,5 @@ def _get_worker() -> SolverWorker:
 async def solver_node(state: AgentState) -> dict[str, Any]:
     question = str(state["messages"][-1].get("content", "")) if state.get("messages") else ""
     repo = state.get("repo", "")
-    result = await _get_worker().solve(question, repo)
+    result = await _get_worker().solve(question, repo, advice=state.get("reflect_advice", ""))
     return {"draft": result["draft"], "citations": result["citations"]}

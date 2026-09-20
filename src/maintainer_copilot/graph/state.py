@@ -35,4 +35,5 @@ class AgentState(TypedDict, total=False):
     final_draft: str
     reflection: dict
     rewrite_count: int
+    reflect_advice: str  # Reflector 驳回时附带的改写建议, 供 Worker 重写
     final_action: dict

@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
     database_url: str = "postgresql://postgres:postgres@localhost:5432/maintainer_copilot"
+    # Executor 演练模式: 默认 True(不发起真实 GitHub 写操作); 需显式关闭才真实发布
+    dry_run: bool = True
 
     # 本地路径
     data_dir: Path = PROJECT_ROOT / "data"
