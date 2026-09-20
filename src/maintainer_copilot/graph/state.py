@@ -27,6 +27,7 @@ class AgentState(TypedDict, total=False):
     repo: str  # "owner/name"
     task_type: str
     messages: Annotated[list[dict], add_messages]
+    issue: dict  # {"title", "body", "number"} - triage 任务的输入
     draft: str
     draft_meta: dict
     citations: list[Citation]

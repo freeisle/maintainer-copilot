@@ -46,15 +46,42 @@ async def run_ask(repo: str, question: str) -> None:
 
 
 async def run_demo_triage(repo: str, issue: int) -> None:
-    # TODO(Sprint 2): 真实分诊; 脚手架阶段验证状态机可编译
-    graph = build_graph()
-    state = {
-        "repo": repo,
-        "task_type": "triage",
-        "messages": [{"role": "user", "content": f"请分诊 {repo}#{issue}"}],
-    }
-    print("状态机已编译, 节点:", list(graph.get_graph().nodes.keys()))
-    print("提示: 完整 HITL 流程需 stream/resume, 在 D7 演示脚本中实现")
+    """对指定 issue 跑真实分诊: 优先读本地采集数据, 其次 GitHub API。"""
+    import json as _json
+    from pathlib import Path
+
+    from maintainer_copilot.workers.triage import TriageWorker
+
+    issue_data: dict | None = None
+    path = Path("data") / "raw" / f"{repo.replace('/', '__')}-issues.jsonl"
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            item = _json.loads(line)
+            if item["number"] == issue:
+                issue_data = item
+                break
+    if issue_data is None:
+        from maintainer_copilot.config import get_settings
+        from maintainer_copilot.tools.github_client import GitHubClient
+
+        issue_data = await GitHubClient(token=get_settings().github_token).get_issue(repo, issue)
+        print("(数据来源: GitHub API)")
+    else:
+        print("(数据来源: 本地采集)")
+    title = issue_data.get("title", "")
+    body = issue_data.get("body", "") or ""
+    result = await TriageWorker().triage(repo, title, body, issue)
+    print(f"# 分诊结果 {repo}#{issue}: {title}")
+    print(f"真实 labels: {[l['name'] for l in issue_data.get('labels', [])]}")
+    print(f"分类: {result['category']} (置信度 {result['confidence']})")
+    print(f"建议标签: {result['labels']}")
+    print(f"相似历史 issue: {result['similar_issues']}")
+    if result.get("reply"):
+        print(f"回复草稿:\n{result['reply']}")
+    else:
+        print("回复草稿: (低置信度降级, 仅打标签)")
 
 
 def main() -> None:
