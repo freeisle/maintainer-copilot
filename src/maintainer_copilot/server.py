@@ -132,6 +132,21 @@ class PendingStore:
 
 _STORE: PendingStore | None = None
 _GRAPH = None
+_BG_LOOP: asyncio.AbstractEventLoop | None = None
+
+
+def _submit_background(coro) -> None:
+    """在独立线程的事件循环上执行后台任务。
+
+    webhook 需快速响应; create_task 在 TestClient 的请求级任务组里会被取消,
+    独立线程 + 专属事件循环在 uvicorn 与测试环境下都稳定。
+    """
+    global _BG_LOOP
+    if _BG_LOOP is None or _BG_LOOP.is_closed():
+        loop = asyncio.new_event_loop()
+        _BG_LOOP = loop
+        threading.Thread(target=loop.run_forever, daemon=True, name="bg-triage").start()
+    asyncio.run_coroutine_threadsafe(coro, _BG_LOOP)
 
 
 def _store() -> PendingStore:
@@ -177,7 +192,11 @@ async def run_triage_to_gate(
 
 
 async def _triage_background(repo: str, title: str, body: str, number: int | None) -> None:
-    payload, thread_id = await run_triage_to_gate(repo, title, body, number)
+    try:
+        payload, thread_id = await run_triage_to_gate(repo, title, body, number)
+    except Exception:  # noqa: BLE001 - 后台任务异常只记录, 不影响 webhook 响应
+        logger.exception("后台分诊异常: %s", title)
+        return
     if payload is None:
         logger.info("分诊未达闸门(降级), 不入队: %s", title)
         return
@@ -275,7 +294,7 @@ async def webhook(request: Request) -> JSONResponse:
     if event == "issues" and payload.get("action") == "opened":
         issue = payload.get("issue", {})
         logger.info("webhook issues.opened: %s#%s -> 路由分诊", repo, issue.get("number"))
-        asyncio.create_task(
+        _submit_background(
             _triage_background(repo, issue.get("title", ""), issue.get("body", "") or "", issue.get("number"))
         )
         return JSONResponse({"ok": True, "routed": "triage"})
