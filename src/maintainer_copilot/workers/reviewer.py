@@ -87,8 +87,9 @@ class ReviewWorker:
             if docs
             else "无相关检索资料(仅依据 diff 本身审查)"
         )
+        # 引用 snippet 与上下文视野一致(500 字符): Reflector 才能核验草稿对资料内容的引用
         citations = [
-            {"source": d["source"], "path": d["path"], "snippet": d["text"][:300]}
+            {"source": d["source"], "path": d["path"], "snippet": d["text"][:500]}
             for d in docs
         ]
         # 3. 生成初审意见(重写时附上自审建议)

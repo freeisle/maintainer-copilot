@@ -70,9 +70,11 @@ async def reflector_node(state: AgentState) -> dict[str, Any]:
         }
     elif state.get("messages"):
         task_input = {"question": message_text(state["messages"][-1])[:500]}
-    # 引用资料: 编号化, 供草稿 [n] 一一核验
+    # 引用资料: 编号化, 供草稿 [n] 一一核验。
+    # 必须展示 Worker 实际看到的完整 snippet(不再二次截断): 自审视野小于草稿视野时,
+    # 草稿引用的内容自审看不到, 只能保守驳回(PR 初审 E2E 连续误杀的真实原因)。
     citation_lines = "\n".join(
-        f"[{i}] ({c.get('source', '')}:{c.get('path', '')}) {c.get('snippet', '')[:150]}"
+        f"[{i}] ({c.get('source', '')}:{c.get('path', '')}) {c.get('snippet', '')}"
         for i, c in enumerate(state.get("citations", []), 1)
     )
     context = {
