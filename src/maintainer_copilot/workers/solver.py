@@ -8,9 +8,10 @@
 """
 import logging
 import re
-from typing import Any
+from typing import Any, Callable
 
 from ..graph.state import AgentState, message_text
+from ..memory.long_term import get_preference
 from ..models.llm import ModelProvider
 from ..rag.query_rewriter import QueryRewriter
 from ..rag.retriever import HybridRetriever
@@ -31,17 +32,23 @@ ANSWER_PROMPT = """你是开源仓库 {repo} 的维护者助理。只依据下�
 3. 资料不足或未覆盖问题核心时, 只输出以下固定拒绝话术(不猜测、不附带任何具体结论):
 
 {refusal}
-
+{language_note}
 {context}
 
 用户问题: {question}
 """
 
 
-def build_answer_prompt(repo: str, context: str, question: str) -> str:
+def build_answer_prompt(
+    repo: str, context: str, question: str, language_note: str = ""
+) -> str:
     """渲染 Answer Prompt(独立函数便于单测硬规则, 防止后续改动悄悄丢失约束)。"""
     return ANSWER_PROMPT.format(
-        repo=repo, context=context, question=question, refusal=REFUSAL_TEXT
+        repo=repo,
+        context=context,
+        question=question,
+        refusal=REFUSAL_TEXT,
+        language_note=language_note,
     )
 
 
@@ -62,11 +69,18 @@ def merge_results(batches: list[list[dict]]) -> list[dict]:
 
 
 class SolverWorker:
-    def __init__(self, llm=None, retriever=None, max_context_chunks: int = 8) -> None:
+    def __init__(
+        self,
+        llm=None,
+        retriever=None,
+        max_context_chunks: int = 8,
+        prefs_getter: Callable | None = None,
+    ) -> None:
         self.llm = llm or ModelProvider()
         self.retriever = retriever or HybridRetriever()
         self.rewriter = QueryRewriter(self.llm)
         self.max_context_chunks = max_context_chunks
+        self.prefs_getter = prefs_getter or get_preference
 
     async def solve(self, question: str, repo: str, advice: str = "") -> dict:
         # 1. 查询改写: 原问题 + LLM 改写(术语补全/中英变体), 最多 3 条
@@ -78,13 +92,20 @@ class SolverWorker:
         docs = merge_results(batches)[: self.max_context_chunks]
         if not docs:
             return {"draft": REFUSAL_TEXT, "citations": [], "docs": []}
-        # 3. 生成带引用回答(重写时附上自审建议)
+        # 3. 生成带引用回答(重写时附上自审建议; 注入长期记忆偏好如回复语言)
         advice_note = f"\n\n上一稿被驳回, 修改建议: {advice}" if advice else ""
+        language_note = ""
+        try:
+            language = self.prefs_getter(repo, "reply_language")
+            if language:
+                language_note = f"\n偏好要求: 回复必须使用语言: {language}。"
+        except Exception as exc:  # noqa: BLE001 - 偏好读取失败不阻断回答
+            logger.warning("读取回复语言偏好失败, 用默认: %s", exc)
         context = "\n\n".join(
             f"[{i}] ({d['source']}:{d['path']}) {d['text'][:600]}"
             for i, d in enumerate(docs, 1)
         )
-        prompt = build_answer_prompt(repo, context, question)
+        prompt = build_answer_prompt(repo, context, question, language_note)
         result = await self.llm.chat(
             [{"role": "user", "content": prompt + advice_note}],
             temperature=0.1,

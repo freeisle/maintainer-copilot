@@ -58,3 +58,44 @@ async def test_solve_refuses_when_no_docs() -> None:
     assert r["draft"] == REFUSAL_TEXT
     assert r["citations"] == []
     assert r["docs"] == []
+
+
+class _DocRetriever:
+    async def retrieve(self, q, repo, top_k=8):
+        return [{"id": "d1", "source": "doc", "path": "p.md", "text": "资料内容", "rerank_score": 0.9}]
+
+
+class _CapturingLLM:
+    def __init__(self, content: str) -> None:
+        self.content = content
+        self.calls: list[list[dict]] = []
+
+    async def chat(self, messages, **kwargs):
+        self.calls.append(messages)
+        return SimpleNamespace(content=self.content)
+
+
+@pytest.mark.asyncio
+async def test_solve_injects_reply_language_preference() -> None:
+    llm = _CapturingLLM("回答 [1]")
+    worker = SolverWorker(  # type: ignore[arg-type]
+        llm=llm,
+        retriever=_DocRetriever(),  # type: ignore[arg-type]
+        prefs_getter=lambda repo, key, default=None: "en",
+    )
+    r = await worker.solve("问?", "freeisle/ragent")
+    answer_prompt = llm.calls[-1][0]["content"]  # 最后一通 LLM 调用是回答
+    assert "回复必须使用语言: en" in answer_prompt
+    assert r["citations"][0]["path"] == "p.md"
+
+
+@pytest.mark.asyncio
+async def test_solve_without_preference_has_no_language_note() -> None:
+    llm = _CapturingLLM("回答 [1]")
+    worker = SolverWorker(  # type: ignore[arg-type]
+        llm=llm,
+        retriever=_DocRetriever(),  # type: ignore[arg-type]
+        prefs_getter=lambda repo, key, default=None: None,
+    )
+    await worker.solve("问?", "freeisle/ragent")
+    assert "偏好要求" not in llm.calls[-1][0]["content"]

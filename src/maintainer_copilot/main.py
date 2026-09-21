@@ -139,6 +139,30 @@ async def run_demo_hitl(repo: str, issue: int) -> None:
     print("Executor 结果:", final_action)
 
 
+def run_prefs(args) -> None:
+    """长期记忆偏好管理: 设置(冲突挂起)/查看/人工裁决。"""
+    from maintainer_copilot.memory import long_term
+
+    if args.action == "set":
+        result = long_term.update_preference(args.repo, args.key, args.value)
+        if result.get("conflict"):
+            print(f"⚠ 冲突挂起(不覆盖): 旧值={result['old']!r} 新值={result['new']!r}")
+            print(f"  人工裁决: uv run mc prefs resolve {args.repo} {args.key} old|new")
+        else:
+            print(f"已设置 {args.repo} {args.key}={args.value!r} (version={result['version']})")
+    elif args.action == "show":
+        mem = long_term.load_memory(args.repo)
+        print(f"{args.repo} 偏好:")
+        for key, value in mem["preferences"].items():
+            print(f"  {key} = {value!r}")
+        for p in long_term.pending_conflicts():
+            if p["repo"] == args.repo:
+                print(f"  ⚠ 待裁决: {p['key']} 旧={p['old']!r} 新={p['new']!r}")
+    elif args.action == "resolve":
+        result = long_term.resolve_conflict(args.repo, args.key, args.keep)
+        print(f"裁决结果: {result}")
+
+
 def run_adoption() -> None:
     """打印 HITL 草稿采纳率汇总(数据只来自真实操作, 不预填)。"""
     from maintainer_copilot.metrics.adoption import get_store
@@ -161,6 +185,18 @@ def main() -> None:
     sub.add_parser("serve", help="启动 Web 服务(审核台+webhook)")
     sub.add_parser("mcp", help="MCP stdio 模式启动工具服务")
     sub.add_parser("adoption", help="HITL 草稿采纳率汇总")
+    prefs = sub.add_parser("prefs", help="长期记忆偏好(冲突需人工裁决)")
+    prefs_sub = prefs.add_subparsers(dest="action", required=True)
+    p_set = prefs_sub.add_parser("set", help="设置偏好(与存量矛盾时挂起待裁决)")
+    p_set.add_argument("repo")
+    p_set.add_argument("key")
+    p_set.add_argument("value")
+    p_show = prefs_sub.add_parser("show", help="查看偏好与待裁决冲突")
+    p_show.add_argument("repo")
+    p_res = prefs_sub.add_parser("resolve", help="裁决冲突")
+    p_res.add_argument("repo")
+    p_res.add_argument("key")
+    p_res.add_argument("keep", choices=["old", "new"])
     ask = sub.add_parser("ask", help="代码库问答(带引用)")
     ask.add_argument("--repo", required=True)
     ask.add_argument("question")
@@ -193,6 +229,8 @@ def main() -> None:
         asyncio.run(run_demo_hitl(args.repo, args.issue))
     elif args.cmd == "adoption":
         run_adoption()
+    elif args.cmd == "prefs":
+        run_prefs(args)
 
 
 if __name__ == "__main__":
