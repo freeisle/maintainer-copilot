@@ -66,7 +66,7 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 | 套件 | 指标 | 基线 | 说明 |
 |---|---|---|---|
 | 分诊 | macro-F1 | **0.49**（bug 0.86 / feature 0.61） | apache/dubbo 真实标签 41 条回归集 |
-| 问答 | LLM-as-judge 三维 rubric | correctness 2.7 / citation_support 2.2 / usefulness 3.0（5 分制） | 10 问 + 引用硬指标 |
+| 问答 | LLM-as-judge 三维 rubric | correctness 3.6 / citation_support 3.6 / usefulness 2.7（5 分制） | 10 问 + 引用硬指标; 收紧引用约束后较初版 2.7/2.2/3.0 显著提升 |
 
 报告生成于 `docs/eval-report/`，可通过 `python -m eval.run_eval` 复现。
 
