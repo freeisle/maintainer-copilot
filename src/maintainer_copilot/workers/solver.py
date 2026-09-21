@@ -17,17 +17,32 @@ from ..rag.retriever import HybridRetriever
 
 logger = logging.getLogger(__name__)
 
-ANSWER_PROMPT = """你是开源仓库 {repo} 的维护者助理。请只依据下方检索到的资料回答用户问题。
+REFUSAL_TEXT = (
+    "依据不足: 检索到的资料未覆盖该问题。"
+    "建议换用更具体的术语重新提问, 或直接查阅仓库文档与源码。"
+)
 
-规则:
-1. 每条结论后标注引用编号, 格式 [1] [2](对应资料编号)
-2. 资料不足以回答时, 明确说明"依据不足", 并给出可查阅的方向
-3. 禁止使用检索资料以外的知识编造事实
+ANSWER_PROMPT = """你是开源仓库 {repo} 的维护者助理。只依据下方检索到的资料回答, 不得使用资料之外的知识。
+
+硬规则:
+1. 每个事实性陈述(代码行为/数字/配置项/版本等)必须紧跟引用编号 [n](对应资料编号);
+   没有编号的句子只能是对资料的一般性概括或后续行动建议。
+2. 严禁输出引用之外的具体事实: 资料未写明的行为、数值、配置项一律不得出现在回答中。
+3. 资料不足或未覆盖问题核心时, 只输出以下固定拒绝话术(不猜测、不附带任何具体结论):
+
+{refusal}
 
 {context}
 
 用户问题: {question}
 """
+
+
+def build_answer_prompt(repo: str, context: str, question: str) -> str:
+    """渲染 Answer Prompt(独立函数便于单测硬规则, 防止后续改动悄悄丢失约束)。"""
+    return ANSWER_PROMPT.format(
+        repo=repo, context=context, question=question, refusal=REFUSAL_TEXT
+    )
 
 
 def parse_citations(answer: str) -> list[int]:
@@ -62,21 +77,16 @@ class SolverWorker:
             batches.append(await self.retriever.retrieve(q, repo, top_k=self.max_context_chunks))
         docs = merge_results(batches)[: self.max_context_chunks]
         if not docs:
-            return {"draft": "依据不足: 未在知识库中检索到相关内容。", "citations": [], "docs": []}
+            return {"draft": REFUSAL_TEXT, "citations": [], "docs": []}
         # 3. 生成带引用回答(重写时附上自审建议)
         advice_note = f"\n\n上一稿被驳回, 修改建议: {advice}" if advice else ""
         context = "\n\n".join(
             f"[{i}] ({d['source']}:{d['path']}) {d['text'][:600]}"
             for i, d in enumerate(docs, 1)
         )
+        prompt = build_answer_prompt(repo, context, question)
         result = await self.llm.chat(
-            [
-                {
-                    "role": "user",
-                    "content": ANSWER_PROMPT.format(repo=repo, context=context, question=question)
-                    + advice_note,
-                }
-            ],
+            [{"role": "user", "content": prompt + advice_note}],
             temperature=0.1,
         )
         answer = result.content

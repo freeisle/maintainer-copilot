@@ -63,13 +63,15 @@ async def run_triage_suite(repo: str, limit: int = 0) -> dict:
     y_pred: list[str] = []
     details: list[dict] = []
     for i, item in enumerate(data, 1):
-        r = await worker.triage(repo, item["title"], item["body"], item["number"])
+        repo_key = item.get("repo") or repo
+        r = await worker.triage(repo_key, item["title"], item["body"], item["number"])
         cat = r.get("category", "invalid")
         y_true.append(item["true_category"])
         y_pred.append(cat)
         details.append(
             {
                 "number": item["number"],
+                "repo": repo_key,
                 "title": item["title"][:60],
                 "true": item["true_category"],
                 "pred": cat,
@@ -88,12 +90,14 @@ async def run_triage_suite(repo: str, limit: int = 0) -> dict:
     return report
 
 
-async def run_qa_suite() -> dict:
+async def run_qa_suite(limit: int = 0) -> dict:
     """问答评测: LLM-as-judge 三维 rubric + 引用有效性硬指标。"""
     from maintainer_copilot.models.llm import ModelProvider
     from maintainer_copilot.workers.solver import SolverWorker, parse_citations
 
     data = load_dataset("qa")
+    if limit:
+        data = data[:limit]
     worker = SolverWorker()
     judge = Judge(ModelProvider())
     results: list[dict] = []
@@ -157,7 +161,7 @@ def main() -> None:
         for lab, v in report["per_class"].items():
             print(f"  {lab}: f1={v['f1']:.4f} (support={v['support']})")
     elif args.suite == "qa":
-        report = asyncio.run(run_qa_suite())
+        report = asyncio.run(run_qa_suite(args.limit))
         print(
             f"avg: correctness={report['avg_correctness']} citation_support={report['avg_citation_support']} "
             f"usefulness={report['avg_usefulness']} judge_errors={report['judge_errors']}"
