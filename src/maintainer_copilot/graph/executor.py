@@ -39,5 +39,9 @@ async def executor_node(state: AgentState) -> dict[str, Any]:
     if number:
         results["comment"] = await client.add_comment(repo, number, draft)
     if number and labels:
-        results["labels"] = await client.add_labels(repo, number, labels)
+        try:
+            results["labels"] = await client.add_labels(repo, number, labels)
+        except Exception as exc:  # noqa: BLE001 - 标签不存在时 GitHub 整体拒绝, 不影响评论发布
+            logger.warning("标签写入失败(评论已发布, 忽略标签错误): %s", exc)
+            results["labels_error"] = str(exc)
     return {"final_action": {"executed": True, "dry_run": False, "results": results}}

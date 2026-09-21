@@ -13,22 +13,22 @@ def build_mcp_server(registry: ToolRegistry | None = None) -> FastMCP:
     registry = registry or build_github_tools()
     mcp = FastMCP("maintainer-copilot")
 
-    async def mcp_get_issue(args: RepoIssueArgs) -> dict:
+    async def get_issue(repo: str, number: int) -> dict:
         """读取单个 issue 的完整内容。"""
-        r = await registry.call("get_issue", args.model_dump())
+        r = await registry.call("get_issue", {"repo": repo, "number": number})
         return {"error": r.error, "hint": r.hint} if not r.ok else {"data": r.data}
 
-    async def mcp_search_issues(args: SearchIssuesArgs) -> dict:
+    async def search_issues(repo: str, query: str, per_page: int = 30) -> dict:
         """在指定仓库搜索 issue。"""
-        r = await registry.call("search_issues", args.model_dump())
+        r = await registry.call("search_issues", {"repo": repo, "query": query, "per_page": per_page})
         return {"error": r.error, "hint": r.hint} if not r.ok else {"data": r.data}
 
-    async def mcp_read_file(args: ReadFileArgs) -> dict:
+    async def read_file(repo: str, path: str, ref: str | None = None) -> dict:
         """读取仓库内指定文件内容。"""
-        r = await registry.call("read_file", args.model_dump())
+        r = await registry.call("read_file", {"repo": repo, "path": path, "ref": ref})
         return {"error": r.error, "hint": r.hint} if not r.ok else {"data": r.data}
 
-    mcp.add_tool(mcp_get_issue)
-    mcp.add_tool(mcp_search_issues)
-    mcp.add_tool(mcp_read_file)
+    mcp.add_tool(get_issue)
+    mcp.add_tool(search_issues)
+    mcp.add_tool(read_file)
     return mcp
