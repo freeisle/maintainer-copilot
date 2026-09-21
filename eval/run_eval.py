@@ -22,6 +22,13 @@ from .judge import Judge
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
+# 进度日志落盘: 长跑时管道缓冲会掩盖进度, 文件日志可随时 tail
+_progress_log = Path(__file__).resolve().parent.parent / "data" / "eval-progress.log"
+_progress_log.parent.mkdir(parents=True, exist_ok=True)
+_fh = logging.FileHandler(_progress_log, encoding="utf-8")
+_fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logging.getLogger().addHandler(_fh)
+
 SUITES = ("qa", "triage", "tool_selection")
 DATASETS = Path(__file__).parent / "datasets"
 REPORT_DIR = Path(__file__).resolve().parent.parent / "docs" / "eval-report"
@@ -97,9 +104,15 @@ async def run_qa_suite() -> dict:
         answer = r["draft"]
         citations = r["citations"]
         cited_texts = [c.get("snippet", "") for c in citations]
-        valid = len(parse_citations(answer)) > 0 or not citations
+        # 判官引用列表必须用上下文原始编号: 回答中的 [n] 对应上下文第 n 条
+        # (此前传过滤后的 citations 重新编号, 与回答编号错配, 分数被系统性压低)
+        docs = r.get("docs", [])
+        judge_citations = [
+            {"source": d["source"], "path": d["path"], "snippet": d["text"][:150]}
+            for d in docs[:8]
+        ]
         verdict = await judge.score_no_ref(
-            citations=citations[:6], question=question, candidate=answer
+            citations=judge_citations, question=question, candidate=answer
         )
         results.append(
             {
