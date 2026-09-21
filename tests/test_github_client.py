@@ -62,3 +62,31 @@ async def test_cache_key_includes_params() -> None:
         page2 = await client.list_issues("x/y", page=2, per_page=100)
     assert page1 == [{"number": 1}]
     assert page2 == [{"number": 2}]
+
+
+DIFF_URL = "https://api.github.com/repos/x/y/pulls/1"
+
+
+@pytest.mark.asyncio
+async def test_get_pull_diff_returns_text() -> None:
+    with respx.mock() as mock:
+        mock.get(DIFF_URL).mock(return_value=httpx.Response(200, text="diff --git a/x b/x"))
+        client = GitHubClient(token="test")
+        diff = await client.get_pull_diff("x/y", 1)
+    assert diff.startswith("diff --git")
+
+
+@pytest.mark.asyncio
+async def test_pull_json_and_diff_cache_not_colliding() -> None:
+    """回归测试: 同一 PR URL 的 JSON 与 diff 请求仅 Accept 头不同, 缓存不得互串。"""
+    with respx.mock() as mock:
+        route = mock.get(DIFF_URL)
+        route.side_effect = [
+            httpx.Response(200, json={"number": 1, "title": "t"}),
+            httpx.Response(200, text="diff --git a/x b/x"),
+        ]
+        client = GitHubClient(token="test")
+        pr = await client.get_pull_request("x/y", 1)
+        diff = await client.get_pull_diff("x/y", 1)
+    assert pr["number"] == 1
+    assert diff.startswith("diff --git")

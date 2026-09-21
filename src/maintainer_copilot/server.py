@@ -214,6 +214,47 @@ async def _triage_background(repo: str, title: str, body: str, number: int | Non
     )
 
 
+async def run_review_to_gate(repo: str, pr_number: int) -> tuple[dict | None, str]:
+    """跑 PR 初审图至 HumanGate 中断; 返回 (闸门载荷或 None, thread_id)。"""
+    thread_id = f"review-{uuid.uuid4().hex[:12]}"
+    state = {
+        "repo": repo,
+        "task_type": "review",
+        "pr": {"number": pr_number},
+        "messages": [{"role": "user", "content": f"PR 初审: {repo}#{pr_number}"}],
+    }
+    config = {"configurable": {"thread_id": thread_id}}
+    payload = None
+    async for event in _get_graph().astream(state, config, stream_mode="updates"):
+        payload = _extract_interrupt(event)
+        if payload is not None:
+            break
+    return payload, thread_id
+
+
+async def _review_background(repo: str, pr_number: int) -> None:
+    try:
+        payload, thread_id = await run_review_to_gate(repo, pr_number)
+    except Exception:  # noqa: BLE001 - 后台任务异常只记录, 不影响 webhook 响应
+        logger.exception("后台 PR 初审异常: %s#%s", repo, pr_number)
+        return
+    if payload is None:
+        logger.info("PR 初审未达闸门(降级), 不入队: %s#%s", repo, pr_number)
+        return
+    _store().add(
+        {
+            "id": thread_id.removeprefix("review-"),
+            "thread_id": thread_id,
+            "repo": payload.get("repo", repo),
+            "task_type": payload.get("task_type", "review"),
+            "draft": payload.get("draft", ""),
+            "citations": payload.get("citations", []),
+            "reflection": payload.get("reflection", {}),
+            "status": "pending",
+        }
+    )
+
+
 class TriageRequest(BaseModel):
     repo: str
     title: str
@@ -298,6 +339,11 @@ async def webhook(request: Request) -> JSONResponse:
             _triage_background(repo, issue.get("title", ""), issue.get("body", "") or "", issue.get("number"))
         )
         return JSONResponse({"ok": True, "routed": "triage"})
+    if event == "pull_request" and payload.get("action") in ("opened", "synchronize"):
+        pr = payload.get("pull_request", {})
+        logger.info("webhook pull_request.%s: %s#%s -> 路由 PR 初审", payload.get("action"), repo, pr.get("number"))
+        _submit_background(_review_background(repo, int(pr.get("number", 0))))
+        return JSONResponse({"ok": True, "routed": "review"})
     return JSONResponse({"ok": True, "ignored": event})
 
 

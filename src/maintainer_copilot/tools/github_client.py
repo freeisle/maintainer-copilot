@@ -40,9 +40,13 @@ class GitHubClient:
 
     @staticmethod
     def _cache_key(url: str, kw: dict) -> str:
-        """缓存键必须包含查询参数与请求体, 否则分页请求互相串缓存。"""
+        """缓存键必须包含查询参数/请求体/自定义头, 否则不同请求互相串缓存。
+
+        headers 也必须入键: 同一 PR URL 的 JSON 与 diff 请求仅 Accept 头不同,
+        不入键会互相污染。
+        """
         key = url
-        for field in ("params", "json"):
+        for field in ("params", "json", "headers"):
             value = kw.get(field)
             if value is None:
                 continue
@@ -52,7 +56,7 @@ class GitHubClient:
         return key
 
     async def _request(
-        self, method: str, url: str, *, cache_ttl: float = 0.0, **kw: Any
+        self, method: str, url: str, *, cache_ttl: float = 0.0, text: bool = False, **kw: Any
     ) -> Any:
         if cache_ttl > 0:
             cache_key = self._cache_key(url, kw)
@@ -67,7 +71,10 @@ class GitHubClient:
                     if resp.status_code == 429:
                         raise RateLimitExceeded(f"429 from {url}")
                     resp.raise_for_status()
-                    data = resp.json() if resp.content else {}
+                    if text:
+                        data = resp.text
+                    else:
+                        data = resp.json() if resp.content else {}
                     if cache_ttl > 0:
                         self._cache[self._cache_key(url, kw)] = (time.monotonic() + cache_ttl, data)
                     return data
@@ -145,6 +152,21 @@ class GitHubClient:
         return await self._request(
             "GET", f"{GITHUB_API}/repos/{repo}/actions/runs",
             params={"head_sha": ref}, cache_ttl=120,
+        )
+
+    async def get_pull_request(self, repo: str, number: int) -> dict:
+        return await self._request(
+            "GET", f"{GITHUB_API}/repos/{repo}/pulls/{number}", cache_ttl=120
+        )
+
+    async def get_pull_diff(self, repo: str, number: int) -> str:
+        """PR diff 原文(unified diff, text 响应)。"""
+        return await self._request(
+            "GET",
+            f"{GITHUB_API}/repos/{repo}/pulls/{number}",
+            headers={"Accept": "application/vnd.github.diff"},
+            cache_ttl=120,
+            text=True,
         )
 
     async def search_code(self, repo: str, query: str) -> dict:

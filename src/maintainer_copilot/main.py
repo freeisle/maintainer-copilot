@@ -139,6 +139,48 @@ async def run_demo_hitl(repo: str, issue: int) -> None:
     print("Executor 结果:", final_action)
 
 
+async def run_demo_review(repo: str, pr_number: int) -> None:
+    """PR 初审演示: 拉取 diff -> 检索 -> 初审意见 -> 自审 -> 闸门 -> 人工决策。"""
+    import time
+
+    from langgraph.types import Command
+
+    state = {
+        "repo": repo,
+        "task_type": "review",
+        "pr": {"number": pr_number},
+        "messages": [{"role": "user", "content": f"PR 初审: {repo}#{pr_number}"}],
+    }
+    graph = build_graph()
+    config = {"configurable": {"thread_id": f"demo-review-{repo}-{pr_number}-{int(time.time())}"}}
+    payload = None
+    async for event in graph.astream(state, config, stream_mode="updates"):
+        inter = event.get("__interrupt__")
+        if inter:
+            first = inter[0] if isinstance(inter, (list, tuple)) else inter
+            payload = first.value if hasattr(first, "value") else first
+            break
+    if payload is None:
+        print("未到达 HITL 闸门(走降级路径, 无初审意见可审)")
+        return
+    print("=" * 60)
+    print(f"PR 初审意见待审 自审: {payload.get('reflection')}")
+    print("-" * 60)
+    print(payload.get("draft", ""))
+    print("-" * 60)
+    choice = input("决策 [a=批准 / e=编辑 / r=驳回]: ").strip().lower()
+    decision: dict = {"decision": "rejected", "edited_draft": None}
+    if choice == "a":
+        decision["decision"] = "approved"
+    elif choice == "e":
+        decision = {"decision": "edited", "edited_draft": input("编辑后文本: ").strip()}
+    final_action: dict = {}
+    async for event in graph.astream(Command(resume=decision), config, stream_mode="updates"):
+        if "executor" in event:
+            final_action = event["executor"].get("final_action", {})
+    print("Executor 结果:", final_action)
+
+
 def run_prefs(args) -> None:
     """长期记忆偏好管理: 设置(冲突挂起)/查看/人工裁决。"""
     from maintainer_copilot.memory import long_term
@@ -206,6 +248,9 @@ def main() -> None:
     hitl = sub.add_parser("demo-hitl", help="HITL 全链路演示(分诊->自审->人工决策->执行)")
     hitl.add_argument("repo")
     hitl.add_argument("issue", type=int)
+    review = sub.add_parser("demo-review", help="PR 初审演示(拉 diff->检索->初审意见->自审->人工决策)")
+    review.add_argument("repo")
+    review.add_argument("pr_number", type=int)
     args = parser.parse_args()
 
     if args.cmd == "chat":
@@ -227,6 +272,8 @@ def main() -> None:
         asyncio.run(run_demo_triage(args.repo, args.issue))
     elif args.cmd == "demo-hitl":
         asyncio.run(run_demo_hitl(args.repo, args.issue))
+    elif args.cmd == "demo-review":
+        asyncio.run(run_demo_review(args.repo, args.pr_number))
     elif args.cmd == "adoption":
         run_adoption()
     elif args.cmd == "prefs":
