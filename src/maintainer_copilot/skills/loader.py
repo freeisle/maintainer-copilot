@@ -1,31 +1,66 @@
-"""per-repo Skill 加载：SKILL.md 常驻 + 参考文档按需加载。
+"""per-repo Skill 加载器: skills/{repo-slug}/skill.yaml + 正文 markdown。
 
-目录约定: skills/{skill_name}/SKILL.md + references/*.md
-按需加载原则: 会话开始只读 SKILL.md(角色/语气/规则); FAQ/标签体系等
-大文件由工具 read_skill_doc 按需读取, 控制上下文开销。
+设计:
+- 按 repo 键组织(Skill 包与知识库键一一对应), Worker 生成回答前按需注入
+- Skill 只增强不兜底: 文件缺失/损坏/禁用一律返回空, 不阻断主链路
+- 内容按上限截断, 避免挤占检索上下文的 token 预算
 """
+import logging
+import re
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 from ..config import get_settings
 
+logger = logging.getLogger(__name__)
 
-class RepoSkill:
-    def __init__(self, name: str) -> None:
-        self.root = get_settings().skill_dir / name
-        self.md = (self.root / "SKILL.md").read_text(encoding="utf-8")
-
-    def list_references(self) -> list[str]:
-        refs = self.root / "references"
-        if not refs.exists():
-            return []
-        return sorted(p.name for p in refs.glob("*.md"))
-
-    def read_reference(self, name: str) -> str:
-        path = (self.root / "references" / name).resolve()
-        if not str(path).startswith(str(self.root.resolve())):
-            raise ValueError(f"非法引用路径: {name}")
-        return path.read_text(encoding="utf-8")
+CONTENT_LIMIT = 4000  # 注入上下文的最大字符数
 
 
-def load_skill(name: str) -> RepoSkill:
-    return RepoSkill(name)
+def _slug(repo: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_.-]", "_", repo)
+
+
+def skill_path(repo: str) -> Path:
+    """Skill 包目录: skills/{repo-slug}/。"""
+    return get_settings().skill_dir / _slug(repo)
+
+
+def load_skill(repo: str) -> dict[str, Any] | None:
+    """加载 repo 对应 Skill 包; 不存在或损坏返回 None。"""
+    path = skill_path(repo)
+    meta = path / "skill.yaml"
+    if not meta.exists():
+        return None
+    try:
+        data = yaml.safe_load(meta.read_text(encoding="utf-8")) or {}
+    except (yaml.YAMLError, OSError) as exc:
+        logger.warning("Skill 元数据损坏, 忽略: %s", exc)
+        return None
+    content = ""
+    content_file = data.get("content_file")
+    if content_file:
+        try:
+            content = (path / content_file).read_text(encoding="utf-8")
+        except OSError as exc:
+            logger.warning("Skill 正文读取失败, 忽略: %s", exc)
+    return {
+        "name": str(data.get("name", path.name)),
+        "description": str(data.get("description", "")),
+        "content": content[:CONTENT_LIMIT],
+        "enabled": bool(data.get("enabled", True)),
+    }
+
+
+def skill_context(repo: str) -> str:
+    """给 Worker 注入的上下文块; 无 Skill / 禁用 / 空正文时返回空串。"""
+    skill = load_skill(repo)
+    if not skill or not skill.get("enabled") or not skill.get("content"):
+        return ""
+    return (
+        f"[仓库专属 Skill: {skill['name']}]\n"
+        f"{skill['description']}\n"
+        f"{skill['content']}\n"
+    )

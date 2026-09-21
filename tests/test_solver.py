@@ -96,6 +96,22 @@ async def test_solve_without_preference_has_no_language_note() -> None:
         llm=llm,
         retriever=_DocRetriever(),  # type: ignore[arg-type]
         prefs_getter=lambda repo, key, default=None: None,
+        skill_getter=lambda repo: "",
     )
     await worker.solve("问?", "freeisle/ragent")
     assert "偏好要求" not in llm.calls[-1][0]["content"]
+
+
+@pytest.mark.asyncio
+async def test_solve_injects_skill_context() -> None:
+    llm = _CapturingLLM("回答 [1]")
+    worker = SolverWorker(  # type: ignore[arg-type]
+        llm=llm,
+        retriever=_DocRetriever(),  # type: ignore[arg-type]
+        prefs_getter=lambda repo, key, default=None: None,
+        skill_getter=lambda repo: "[仓库专属 Skill: 术语表]\n候补=waitlist\n",
+    )
+    await worker.solve("问?", "freeisle/12306")
+    answer_prompt = llm.calls[-1][0]["content"]
+    assert "仓库专属 Skill: 术语表" in answer_prompt
+    assert "候补=waitlist" in answer_prompt

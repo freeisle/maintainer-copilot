@@ -1,0 +1,4 @@
+name: 12306 候补购票领域映射
+description: 候补购票的业务口径与代码位置映射(业务术语→代码模块), 回答候补相关问题时优先参考; 内容依据仓库源码与 ai-service 知识文档整理
+content_file: terms.md
+enabled: true

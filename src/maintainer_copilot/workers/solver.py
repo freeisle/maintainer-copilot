@@ -15,6 +15,7 @@ from ..memory.long_term import get_preference
 from ..models.llm import ModelProvider
 from ..rag.query_rewriter import QueryRewriter
 from ..rag.retriever import HybridRetriever
+from ..skills.loader import skill_context
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ ANSWER_PROMPT = """你是开源仓库 {repo} 的维护者助理。只依据下�
 
 {refusal}
 {language_note}
+{skill}
 {context}
 
 用户问题: {question}
@@ -40,7 +42,7 @@ ANSWER_PROMPT = """你是开源仓库 {repo} 的维护者助理。只依据下�
 
 
 def build_answer_prompt(
-    repo: str, context: str, question: str, language_note: str = ""
+    repo: str, context: str, question: str, language_note: str = "", skill: str = ""
 ) -> str:
     """渲染 Answer Prompt(独立函数便于单测硬规则, 防止后续改动悄悄丢失约束)。"""
     return ANSWER_PROMPT.format(
@@ -49,6 +51,7 @@ def build_answer_prompt(
         question=question,
         refusal=REFUSAL_TEXT,
         language_note=language_note,
+        skill=skill,
     )
 
 
@@ -75,12 +78,14 @@ class SolverWorker:
         retriever=None,
         max_context_chunks: int = 8,
         prefs_getter: Callable | None = None,
+        skill_getter: Callable | None = None,
     ) -> None:
         self.llm = llm or ModelProvider()
         self.retriever = retriever or HybridRetriever()
         self.rewriter = QueryRewriter(self.llm)
         self.max_context_chunks = max_context_chunks
         self.prefs_getter = prefs_getter or get_preference
+        self.skill_getter = skill_getter or skill_context
 
     async def solve(self, question: str, repo: str, advice: str = "") -> dict:
         # 1. 查询改写: 原问题 + LLM 改写(术语补全/中英变体), 最多 3 条
@@ -92,7 +97,7 @@ class SolverWorker:
         docs = merge_results(batches)[: self.max_context_chunks]
         if not docs:
             return {"draft": REFUSAL_TEXT, "citations": [], "docs": []}
-        # 3. 生成带引用回答(重写时附上自审建议; 注入长期记忆偏好如回复语言)
+        # 3. 生成带引用回答(重写时附上自审建议; 注入长期记忆偏好与仓库 Skill)
         advice_note = f"\n\n上一稿被驳回, 修改建议: {advice}" if advice else ""
         language_note = ""
         try:
@@ -101,11 +106,16 @@ class SolverWorker:
                 language_note = f"\n偏好要求: 回复必须使用语言: {language}。"
         except Exception as exc:  # noqa: BLE001 - 偏好读取失败不阻断回答
             logger.warning("读取回复语言偏好失败, 用默认: %s", exc)
+        skill_note = ""
+        try:
+            skill_note = self.skill_getter(repo)
+        except Exception as exc:  # noqa: BLE001 - Skill 加载失败不阻断回答
+            logger.warning("加载仓库 Skill 失败, 跳过: %s", exc)
         context = "\n\n".join(
             f"[{i}] ({d['source']}:{d['path']}) {d['text'][:600]}"
             for i, d in enumerate(docs, 1)
         )
-        prompt = build_answer_prompt(repo, context, question, language_note)
+        prompt = build_answer_prompt(repo, context, question, language_note, skill_note)
         result = await self.llm.chat(
             [{"role": "user", "content": prompt + advice_note}],
             temperature=0.1,
