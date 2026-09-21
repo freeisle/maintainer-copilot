@@ -1,0 +1,25 @@
+{"query": "查看 issue #67 的完整内容", "expected_tool": "get_issue"}
+{"query": "issue #5 现在是什么状态", "expected_tool": "get_issue"}
+{"query": "帮我看看 #42 的正文写了什么", "expected_tool": "get_issue"}
+{"query": "issue #99 的标题是什么", "expected_tool": "get_issue"}
+{"query": "读一下 #12 这个 issue 的详情", "expected_tool": "get_issue"}
+{"query": "#8 是否已经关闭了", "expected_tool": "get_issue"}
+{"query": "有没有人报过类似的 OOM 问题", "expected_tool": "search_issues"}
+{"query": "搜索标题里带 gateway 的 issue", "expected_tool": "search_issues"}
+{"query": "这个问题是不是重复提交, 查一下历史 issue", "expected_tool": "search_issues"}
+{"query": "最近有没有类似的 feature 请求", "expected_tool": "search_issues"}
+{"query": "找一下关于数据库连接超时的 issue", "expected_tool": "search_issues"}
+{"query": "有没有关于 docker 部署的历史问题", "expected_tool": "search_issues"}
+{"query": "查查关键词 内存泄漏 的 issue", "expected_tool": "search_issues"}
+{"query": "pom.xml 里的依赖配置是什么", "expected_tool": "read_file"}
+{"query": "帮我看下 application.yml 的端口配置", "expected_tool": "read_file"}
+{"query": "README 里写了什么", "expected_tool": "read_file"}
+{"query": "docker-compose.yml 怎么配的", "expected_tool": "read_file"}
+{"query": "config.properties 的内容", "expected_tool": "read_file"}
+{"query": "看下 v2.0 分支的 README.md", "expected_tool": "read_file"}
+{"query": "build.gradle 里插件配置", "expected_tool": "read_file"}
+{"query": "给这个 issue 打上 bug 标签", "expected_tool": "none"}
+{"query": "回复这个 issue 说\"已确认\"", "expected_tool": "none"}
+{"query": "关闭 issue #10", "expected_tool": "none"}
+{"query": "数据库连接超时的报错怎么解决", "expected_tool": "none"}
+{"query": "定时任务的实现代码在哪里", "expected_tool": "none"}

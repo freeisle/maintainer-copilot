@@ -44,7 +44,7 @@ def load_dataset(name: str) -> list[dict]:
 
 def write_report(suite: str, report: dict) -> Path:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d-%H%M")
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     path = REPORT_DIR / f"{suite}-{stamp}.md"
     path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     logger.info("报告 -> %s", path)
@@ -147,11 +147,72 @@ async def run_qa_suite(limit: int = 0) -> dict:
     return report
 
 
+async def run_tool_selection_suite(ablate: bool = False) -> dict:
+    """工具选择评测: 查询 -> 期望工具 的准确率 + 混淆分布(验证工具描述质量)。
+
+    ablate=True: 用模糊描述(复述工具名)替换"何时用/何时不用"描述做消融对照,
+    量化描述质量对选择准确率的贡献。
+    """
+    from dataclasses import replace
+
+    from maintainer_copilot.tools.github_tools import build_github_tools
+    from maintainer_copilot.tools.registry import ToolRegistry
+    from maintainer_copilot.tools.selector import ToolSelector
+
+    registry = build_github_tools()
+    if ablate:
+        vague = {
+            "get_issue": "获取 issue 数据",
+            "search_issues": "搜索 issue",
+            "read_file": "读取文件",
+        }
+        bare = ToolRegistry()
+        for name in registry.tool_names():
+            bare.register(replace(registry.get(name), description=vague[name]))
+        registry = bare
+    selector = ToolSelector(registry=registry)
+    data = load_dataset("tool_selection")
+    y_true: list[str] = []
+    y_pred: list[str] = []
+    details: list[dict] = []
+    for i, item in enumerate(data, 1):
+        pred = await selector.select(item["query"])
+        ok = pred == item["expected_tool"]
+        y_true.append(item["expected_tool"])
+        y_pred.append(pred)
+        details.append(
+            {
+                "query": item["query"],
+                "expected": item["expected_tool"],
+                "pred": pred,
+                "correct": ok,
+            }
+        )
+        logger.info(
+            "[%d/%d] %s expected=%s pred=%s",
+            i, len(data), item["query"][:24], item["expected_tool"], pred,
+        )
+    accuracy = sum(t == p for t, p in zip(y_true, y_pred)) / len(y_pred)
+    from collections import Counter
+
+    confusion = Counter((t, p) for t, p in zip(y_true, y_pred))
+    report = {
+        "samples": len(data),
+        "accuracy": round(accuracy, 4),
+        "ablate": ablate,
+        "errors": [d for d in details if not d["correct"]],
+        "confusion": {f"{t}->{p}": n for (t, p), n in confusion.items()},
+    }
+    write_report("tool_selection", report)
+    return report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="评测入口")
     parser.add_argument("--suite", choices=SUITES, required=True)
     parser.add_argument("--repo", help="triage 套件的知识库键")
     parser.add_argument("--limit", type=int, default=0, help="只跑前 N 条(调试用)")
+    parser.add_argument("--ablate", action="store_true", help="tool_selection: 模糊描述消融对照")
     args = parser.parse_args()
     if args.suite == "triage":
         if not args.repo:
@@ -167,7 +228,10 @@ def main() -> None:
             f"usefulness={report['avg_usefulness']} judge_errors={report['judge_errors']}"
         )
     else:
-        print("tool_selection 套件待实现(D9+)")
+        report = asyncio.run(run_tool_selection_suite(args.ablate))
+        print(f"tool selection accuracy: {report['accuracy']:.4f} (samples={report['samples']}, ablate={report['ablate']})")
+        for error in report["errors"]:
+            print(f"  x {error['query'][:30]} expected={error['expected']} pred={error['pred']}")
 
 
 if __name__ == "__main__":

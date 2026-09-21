@@ -33,8 +33,8 @@ def build_github_tools(client: GitHubClient | None = None) -> ToolRegistry:
         ToolSpec(
             name="get_issue",
             description=(
-                "读取单个 issue 的标题/正文/状态。当需要查看某个 issue 的完整内容时使用;"
-                "若只想找相似问题, 用 search_issues。"
+                "读取指定编号 issue 的标题/正文/状态。查询里提到具体 issue 编号时使用;"
+                "要查找相似/历史 issue 用 search_issues, 要文件内容用 read_file。"
             ),
             fn=client.get_issue,
             args_schema=RepoIssueArgs,
@@ -44,8 +44,8 @@ def build_github_tools(client: GitHubClient | None = None) -> ToolRegistry:
         ToolSpec(
             name="search_issues",
             description=(
-                "在指定仓库搜索 issue(标题+正文)。当需要找与当前问题相似的历史 issue、"
-                "判断是否重复提交时使用; 不支持查代码, 查代码用 read_file。"
+                "在仓库内按关键词搜索历史 issue(标题+正文)。查询提到找相似问题/判断是否重复/"
+                "搜历史反馈时使用; 已知编号的单个 issue 用 get_issue, 代码或配置文件内容用 read_file。"
             ),
             fn=client.search_issues,
             args_schema=SearchIssuesArgs,
@@ -55,8 +55,9 @@ def build_github_tools(client: GitHubClient | None = None) -> ToolRegistry:
         ToolSpec(
             name="read_file",
             description=(
-                "读取仓库内指定文件内容。当回答涉及具体配置/实现细节时使用;"
-                "目录浏览用 list_dir, 文件历史用 get_commit_history。"
+                "读取仓库内指定文件(查询中给出文件名/路径)的内容。需要某个文件的代码或配置时使用;"
+                "未指定文件的代码定位或通用技术问题选 none(走知识库检索);"
+                "issue 相关内容用 get_issue / search_issues。"
             ),
             fn=client.get_contents,
             args_schema=ReadFileArgs,
