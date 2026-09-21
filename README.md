@@ -51,6 +51,27 @@ uv run mc mcp            # MCP stdio 模式
 uv run pytest            # 测试
 ```
 
+## 演示
+
+```bash
+uv run mc ask --repo freeisle/12306 "候补购票是怎么实现的？"   # 代码库问答(带引用)
+uv run mc demo-triage freeisle/ragent 108                        # Issue 分诊
+uv run mc demo-hitl freeisle/ragent 67                           # HITL 全链路(自审->人工批准->执行)
+uv run mc mcp                                                    # MCP stdio 模式
+uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评测
+```
+
+完整演示流程见 [docs/demo-walkthrough.md](docs/demo-walkthrough.md)。
+
+## 评测基线
+
+| 套件 | 指标 | 基线 | 说明 |
+|---|---|---|---|
+| 分诊 | macro-F1 | **0.49**（bug 0.86 / feature 0.61） | apache/dubbo 真实标签 41 条回归集 |
+| 问答 | LLM-as-judge 三维 rubric | correctness 2.7 / citation_support 2.2 / usefulness 3.0（5 分制） | 10 问 + 引用硬指标 |
+
+报告生成于 `docs/eval-report/`，可通过 `python -m eval.run_eval` 复现。
+
 ## 技术栈
 
 | 层 | 组件 |
@@ -66,8 +87,8 @@ uv run pytest            # 测试
 
 | Milestone | 内容 | 状态 |
 |---|---|---|
-| M1 | 代码库问答 MVP（三源索引 + 混合检索 + 带引用回答） | 🔲 |
-| M2 | 分诊 + HITL 闭环（webhook → 草稿 → 审核台 → 发布）+ 评测体系 | 🔲 |
+| M1 | 代码库问答 MVP（三源索引 + 混合检索 + 带引用回答） | ✅ |
+| M2 | 分诊 + HITL 闭环（webhook → 草稿 → 审核台 → 发布）+ 评测体系 | ✅ |
 | 后续 | PR 初审、Skill 自迭代、A2A 工具服务化、后训练 | 🔲 |
 
 ## License
