@@ -8,13 +8,37 @@ import logging
 from typing import Any
 
 from ..config import get_settings
+from ..metrics.adoption import get_store
 from ..tools.github_client import GitHubClient
 from .state import AgentState
 
 logger = logging.getLogger(__name__)
 
 
+def _record_decision(state: AgentState) -> None:
+    """采集 HITL 决策事件(采纳率数据源); 失败只告警, 不影响主流程。
+
+    仅记录人工决策: 闸门恢复后 state 里必有 approval 键;
+    自审降级路径没有 approval 键, 不是人工决策, 不记录。
+    """
+    if "approval" not in state:
+        return
+    try:
+        meta = state.get("draft_meta") or {}
+        note = state.get("final_draft") or state.get("draft", "")
+        get_store().record(
+            repo=state.get("repo", ""),
+            issue_number=meta.get("issue_number"),
+            worker=state.get("task_type", ""),
+            decision=state.get("approval", "rejected"),
+            note=note,
+        )
+    except Exception as exc:  # noqa: BLE001 - 指标采集绝不阻断发布链路
+        logger.warning("决策事件记录失败(不影响执行): %s", exc)
+
+
 async def executor_node(state: AgentState) -> dict[str, Any]:
+    _record_decision(state)
     approval = state.get("approval", "rejected")
     if approval not in ("approved", "edited"):
         logger.info("未获批准, 跳过执行 (approval=%s)", approval)

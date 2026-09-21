@@ -139,12 +139,28 @@ async def run_demo_hitl(repo: str, issue: int) -> None:
     print("Executor 结果:", final_action)
 
 
+def run_adoption() -> None:
+    """打印 HITL 草稿采纳率汇总(数据只来自真实操作, 不预填)。"""
+    from maintainer_copilot.metrics.adoption import get_store
+
+    summary = get_store().summary()
+    if summary["total_decisions"] == 0:
+        print("暂无 HITL 决策记录。运行 demo-hitl 并在闸门处做出决策后自动采集。")
+        return
+    print(f"总决策数: {summary['total_decisions']}")
+    print(f"采纳(批准+编辑): {summary['adopted']} / 驳回: {summary['rejected']}")
+    print(f"采纳率: {summary['adoption_rate']}")
+    for worker, counts in summary["by_worker"].items():
+        print(f"  {worker}: {counts}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="mc", description="Maintainer Copilot")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("chat", help="交互式问答")
     sub.add_parser("serve", help="启动 Web 服务(审核台+webhook)")
     sub.add_parser("mcp", help="MCP stdio 模式启动工具服务")
+    sub.add_parser("adoption", help="HITL 草稿采纳率汇总")
     ask = sub.add_parser("ask", help="代码库问答(带引用)")
     ask.add_argument("--repo", required=True)
     ask.add_argument("question")
@@ -175,6 +191,8 @@ def main() -> None:
         asyncio.run(run_demo_triage(args.repo, args.issue))
     elif args.cmd == "demo-hitl":
         asyncio.run(run_demo_hitl(args.repo, args.issue))
+    elif args.cmd == "adoption":
+        run_adoption()
 
 
 if __name__ == "__main__":
