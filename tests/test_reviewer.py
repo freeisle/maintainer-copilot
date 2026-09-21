@@ -27,6 +27,14 @@ index 000..333
 """
 
 
+def test_review_prompt_forbids_uncited_facts() -> None:
+    """回归防线: 初审 Prompt 必须含"禁止引用外事实"硬规则(E2E 抓出的引用编造)。"""
+    from maintainer_copilot.workers.reviewer import REVIEW_PROMPT
+
+    assert "严禁引用之外的具体事实" in REVIEW_PROMPT
+    assert "不得把资料里没有的细节" in REVIEW_PROMPT
+
+
 def test_parse_diff_files() -> None:
     assert parse_diff_files(SAMPLE_DIFF) == ["src/a.py", "docs/b.md"]
     assert parse_diff_files("") == []
