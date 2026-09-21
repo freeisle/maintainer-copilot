@@ -72,6 +72,16 @@ class ReviewWorker:
         # 1. 拉取 PR 元信息与 diff
         pr = await self.github.get_pull_request(repo, pr_number)
         diff = await self.github.get_pull_diff(repo, pr_number)
+        if not diff.strip():
+            # 拉取失败/空 diff: 明确拒绝, 不让 LLM 在空 diff 上猜测(E2E 中曾生成误导性草稿)
+            return {
+                "draft": "依据不足: 拉取 PR diff 失败或为空, 无法进行初审。",
+                "citations": [],
+                "docs": [],
+                "pr_meta": {"issue_number": pr_number, "labels": []},
+                "truncated": False,
+                "summary_mode": False,
+            }
         changed_files = parse_diff_files(diff)
         truncated = len(diff) > DIFF_HARD_LIMIT
         diff_text = diff[:DIFF_HARD_LIMIT]

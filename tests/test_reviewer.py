@@ -84,6 +84,17 @@ async def test_review_drafts_with_citations() -> None:
 
 
 @pytest.mark.asyncio
+async def test_review_refuses_when_diff_empty() -> None:
+    """diff 拉取失败/为空: 明确拒绝, 不生成误导性草稿。"""
+    worker = ReviewWorker(  # type: ignore[arg-type]
+        llm=_FakeLLM(), retriever=_FakeRetriever(), github=_FakeGitHub("")
+    )
+    r = await worker.review("freeisle/ragent", 1)
+    assert "依据不足" in r["draft"]
+    assert r["citations"] == []
+
+
+@pytest.mark.asyncio
 async def test_review_truncates_oversized_diff_to_summary_mode() -> None:
     llm = _FakeLLM()
     big_diff = SAMPLE_DIFF + "\n+ padding " * (DIFF_HARD_LIMIT // 10)
