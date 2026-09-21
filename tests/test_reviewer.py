@@ -94,3 +94,14 @@ async def test_reviewer_node_without_pr_number_refuses() -> None:
     out = await reviewer_node({"repo": "freeisle/ragent", "task_type": "review"})  # type: ignore[arg-type]
     assert "依据不足" in out["draft"]
     assert out["citations"] == []
+
+
+def test_agent_state_schema_includes_pr_field() -> None:
+    """回归测试: pr 键必须在 AgentState schema 内。
+
+    E2E 抓出的真 bug: 初始 state 里的 pr 键不在 schema 中, LangGraph 静默丢弃,
+    reviewer_node 拿不到 PR 编号, 初审恒为"依据不足"拒绝话术。
+    """
+    from maintainer_copilot.graph.state import AgentState
+
+    assert "pr" in AgentState.__annotations__
