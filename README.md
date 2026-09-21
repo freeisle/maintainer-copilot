@@ -31,11 +31,9 @@ flowchart TB
 ## Quick Start
 
 ```bash
-# 1. 环境准备（Python >= 3.13）
+# 1. 环境准备（Python >= 3.13; 数据库用 docker compose 一键起 pgvector）
 pip install uv
-docker run -d --name pgvector -p 5432:5432 \
-  -e POSTGRES_PASSWORD=postgres -v pgdata:/var/lib/postgresql/data \
-  pgvector/pgvector:pg16
+docker compose up -d
 
 # 2. 安装依赖
 uv sync                  # 核心依赖
