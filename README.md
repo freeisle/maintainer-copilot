@@ -87,7 +87,8 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 |---|---|---|
 | M1 | 代码库问答 MVP（三源索引 + 混合检索 + 带引用回答） | ✅ |
 | M2 | 分诊 + HITL 闭环（webhook → 草稿 → 审核台 → 发布）+ 评测体系 | ✅ |
-| 后续 | PR 初审、Skill 自迭代、A2A 工具服务化、后训练 | 🔲 |
+| M2.5 | 引用约束收紧、PR 初审、长期记忆、工具选择评测、Skill 加载、增量更新、CI、采纳率采集 | ✅ |
+| 后续 | 双判官评测、分诊判别规则再迭代、A2A 工具服务化、后训练 | 🔲 |
 
 ## License
 
