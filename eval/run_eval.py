@@ -52,33 +52,48 @@ def write_report(suite: str, report: dict) -> Path:
 
 
 async def run_triage_suite(repo: str, limit: int = 0) -> dict:
-    """分诊评测: 与真实 label 类别比对 macro-F1。"""
+    """分诊评测: 与真实 label 类别比对 macro-F1。
+
+    断点续跑: 每样本落盘 checkpoint(data/eval-checkpoints/), 重启跳过已完成编号。
+    长跑中段(LLM 余额/数据库故障)不必从头再来。
+    """
     from maintainer_copilot.workers.triage import TriageWorker
 
     data = load_dataset("triage")
     if limit:
         data = data[:limit]
+    ckpt_path = _progress_log.parent.parent / "data" / "eval-checkpoints" / f"triage-{repo.replace('/', '__')}.jsonl"
+    ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+    done: dict[int, dict] = {}
+    if ckpt_path.exists():
+        for line in ckpt_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                item = json.loads(line)
+                done[item["number"]] = item
+    pending = [item for item in data if item["number"] not in done]
+    logger.info("断点续跑: 已完成 %d, 待跑 %d", len(done), len(pending))
     worker = TriageWorker()
-    y_true: list[str] = []
-    y_pred: list[str] = []
-    details: list[dict] = []
-    for i, item in enumerate(data, 1):
+    y_true: list[str] = [d["true"] for d in done.values()]
+    y_pred: list[str] = [d["pred"] for d in done.values()]
+    details: list[dict] = list(done.values())
+    for i, item in enumerate(pending, len(done) + 1):
         repo_key = item.get("repo") or repo
         r = await worker.triage(repo_key, item["title"], item["body"], item["number"])
         cat = r.get("category", "invalid")
         y_true.append(item["true_category"])
         y_pred.append(cat)
-        details.append(
-            {
-                "number": item["number"],
-                "repo": repo_key,
-                "title": item["title"][:60],
-                "true": item["true_category"],
-                "pred": cat,
-                "confidence": r.get("confidence"),
-                "correct": cat == item["true_category"],
-            }
-        )
+        record = {
+            "number": item["number"],
+            "repo": repo_key,
+            "title": item["title"][:60],
+            "true": item["true_category"],
+            "pred": cat,
+            "confidence": r.get("confidence"),
+            "correct": cat == item["true_category"],
+        }
+        details.append(record)
+        with open(ckpt_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
         logger.info(
             "[%d/%d] #%s true=%s pred=%s conf=%s",
             i, len(data), item["number"], item["true_category"], cat, r.get("confidence"),
