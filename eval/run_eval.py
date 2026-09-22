@@ -30,6 +30,7 @@ _fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
 logging.getLogger().addHandler(_fh)
 
 SUITES = ("qa", "triage", "tool_selection")
+MAX_SAMPLE_RETRIES = 3  # 单样本瞬时故障(LLM 连接/余额抖动)的重试上限
 DATASETS = Path(__file__).parent / "datasets"
 REPORT_DIR = Path(__file__).resolve().parent.parent / "docs" / "eval-report"
 
@@ -76,9 +77,23 @@ async def run_triage_suite(repo: str, limit: int = 0) -> dict:
     y_true: list[str] = [d["true"] for d in done.values()]
     y_pred: list[str] = [d["pred"] for d in done.values()]
     details: list[dict] = list(done.values())
+    failed: list[int] = []
     for i, item in enumerate(pending, len(done) + 1):
         repo_key = item.get("repo") or repo
-        r = await worker.triage(repo_key, item["title"], item["body"], item["number"])
+        r: dict | None = None
+        for attempt in range(MAX_SAMPLE_RETRIES):
+            try:
+                r = await worker.triage(repo_key, item["title"], item["body"], item["number"])
+                break
+            except Exception as exc:  # noqa: BLE001 - 瞬时 LLM/网络故障不应中断长跑
+                logger.warning("样本 #%s 第 %d/%d 次失败: %s", item["number"], attempt + 1, MAX_SAMPLE_RETRIES, exc)
+                if attempt + 1 < MAX_SAMPLE_RETRIES:
+                    await asyncio.sleep(5 * (attempt + 1))
+        if r is None:
+            # 不入 checkpoint: 下次续跑时重试该样本
+            failed.append(item["number"])
+            logger.error("样本 #%s 重试耗尽, 跳过(F1 按已分类样本计算)", item["number"])
+            continue
         cat = r.get("category", "invalid")
         y_true.append(item["true_category"])
         y_pred.append(cat)
@@ -101,6 +116,7 @@ async def run_triage_suite(repo: str, limit: int = 0) -> dict:
     report = metrics.macro_f1(y_true, y_pred)
     report["details"] = details
     report["samples"] = len(data)
+    report["failed_samples"] = failed
     write_report("triage", report)
     return report
 
