@@ -38,17 +38,42 @@ uv run mc demo-hitl freeisle/ragent 67
 - 现场演示「自审抓出草稿编造事实」案例（曾编造"用户已覆盖 4 个测试用例"被拦截）；
 - Executor 在批准后执行；默认 dry-run，`MC_DRY_RUN=false` 时真实发布。
 
-## 5. 评测体系（1 分钟）
+## 5. PR 初审（2 分钟，可选加场）
+
+```bash
+# 在 fork 上准备一个测试 PR, 然后:
+uv run mc demo-review freeisle/ragent 3
+# 输入 a 批准 / e 编辑 / r 驳回
+```
+
+要点（真实演示记录，见 commit 2a9cfcb / e77323b / 842eb03）：
+- 全链路：拉取 PR diff → 解析改动文件 → 混合检索相关代码/文档 → 四维初审（正确性/规范/测试覆盖/风险）→ Reflector 自审 → 闸门 → Executor；
+- 初审意见带 [n] 引用，并诚实标注「与改动无直接关联的资料未作为审查依据」；纯文档改动会明确跳过正确性/测试维度（不硬凑）；
+- 两个真实排障故事：① `pr` 键不在 AgentState schema 被 LangGraph 静默丢弃 → 节点恒拒（E2E 抓出，加 schema 回归测试）；② 自审视野（150 字符）小于草稿视野（500 字符）→ 草稿引用自审看不到、连续误杀 → 对齐视野后一次通过；
+- diff 过大自动截断进入「只总结」模式，不逐行判错。
+
+## 6. 评测体系（1 分钟）
 
 展示 `docs/eval-report/` 下的报告：
 - 分诊基线：apache/dubbo 真实标签，macro-F1 0.49（bug 0.86）；
-- 问答基线：LLM-as-judge 三维 rubric + 引用硬指标；
-- 讲迭代故事：首轮 QA 低分 → 定位判官引用编号错配（评测框架自身 bug）→ 修复重跑，全程 commit 可追溯。
+- 问答基线：LLM-as-judge 三维 rubric，收紧引用约束后 correctness 3.6 / citation_support 3.6（初版 2.7/2.2）；
+- 工具选择：25 条真实查询准确率 1.00，模糊描述消融 0.92（描述质量贡献可量化）；
+- 讲迭代故事：首轮 QA 低分 → 定位判官引用编号错配（评测框架自身 bug）→ 修复重跑 → Prompt 收紧再迭代，全程 commit 可追溯。
 
-## 6. 收尾（1 分钟）
+## 7. 长期记忆与采纳率（30 秒，可选）
+
+```bash
+uv run mc prefs set freeisle/12306 reply_language en   # 冲突时挂起待裁决
+uv run mc prefs resolve freeisle/12306 reply_language new
+uv run mc adoption                                    # HITL 草稿采纳率(真实操作累计)
+```
+
+## 8. 收尾（1 分钟）
 
 展示 commit 历史：Conventional Commits，从空仓库按 milestone 演进；`docs/architecture.md` 记录关键取舍（为什么不用 A2A/ES/Milvus）。
 
 ## 真实发布示例
 
 [freeisle/ragent#2](https://github.com/freeisle/ragent/issues/2)：真实 webhook 分诊 → 自审通过 → 人工批准 → 发布评论 + 打标签（question/milvus/configuration）。
+
+PR 初审 E2E：[freeisle/ragent#3](https://github.com/freeisle/ragent/pull/3)（演示后已关闭）：拉 diff → 初审 → 自审两轮排障后通过 → 批准 → dry-run 记录评论动作。
