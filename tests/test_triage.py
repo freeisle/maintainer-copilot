@@ -1,7 +1,14 @@
-"""TriageWorker 单测：LLM 输出 JSON 解析。"""
+"""TriageWorker 单测：LLM 输出 JSON 解析 / 判别规则回归。"""
 import pytest
 
-from maintainer_copilot.workers.triage import extract_json
+from maintainer_copilot.workers.triage import TRIAGE_PROMPT, extract_json
+
+
+def test_prompt_has_feature_disambiguation_rules() -> None:
+    """回归防线: 判别规则与反例不得被悄悄删除(P0-2 feature 误判修复)。"""
+    assert "先找\"可复现的错误行为\"" in TRIAGE_PROMPT
+    assert "标题以 [Bug] 开头只是 issue 模板前缀" in TRIAGE_PROMPT
+    assert "未发生任何错误 → feature(请求行为改变)" in TRIAGE_PROMPT
 
 
 def test_extract_json_plain() -> None:

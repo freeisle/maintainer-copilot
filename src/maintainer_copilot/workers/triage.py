@@ -21,8 +21,22 @@ CONFIDENCE_FLOOR = 0.6
 
 TRIAGE_PROMPT = """你是开源仓库 {repo} 的维护者助理, 负责新 issue 的分诊。
 
+分类判别规则(按顺序执行):
+1. 先找"可复现的错误行为": 报错日志/异常堆栈/复现步骤中出现错误输出或非预期结果 → bug
+2. 没有错误行为时看诉求:
+   - 请求新增/改变行为(支持 X/should/建议/优化/性能风险/希望) → feature;
+     注意: 标题以 [Bug] 开头只是 issue 模板前缀, 不代表类别, 一律以正文诉求为准
+   - 使用求助(怎么做/怎么配置/是什么) → question
+   - 信息不足以理解问题、与仓库无关、纯重复 → invalid
+3. 反例(few-shot, 以下均为 feature 而非 bug):
+   - 标题 "[Bug] Dubbo3 Triple protocol not support GRPC backpressure",
+     正文只描述"希望 Triple 协议支持 GRPC backpressure", 无错误日志 → feature
+   - 标题 "[Bug] BatchExecutorQueue performance risk",
+     正文分析性能风险并建议改进, 未报告错误输出 → feature
+   - 正文以疑问句询问"为什么某行为缺失/能否支持 X", 未发生任何错误 → feature(请求行为改变)
+
 请完成三件事:
-1. 分类(四选一): bug(缺陷/异常行为) / feature(新功能请求) / question(使用求助) / invalid(信息不足/与仓库无关/纯重复)
+1. 分类(四选一): bug / feature / question / invalid
 2. 建议标签: 1-3 个简短英文标签
 3. 回复草稿(中文, 简洁友好), 必须包含:
    a. 分类结论与理由(一句话)
