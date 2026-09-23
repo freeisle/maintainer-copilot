@@ -93,10 +93,10 @@ stateDiagram-v2
 
 ## 5. 评测体系
 
-- **分诊集**：真实历史 issue 的 label 作弱标注，macro-F1 每类；
-- **问答集**：被维护者关闭的历史 issue，LLM-as-judge 三维 rubric（正确性/引用支撑/可用性）+ 引用精确率程序硬指标 + 人工抽检 20%；
+- **分诊集**：真实历史 issue 的 label 作弱标注，macro-F1 按类度量（实测 77 样本 4 分类，见 docs/eval-report/）；
+- **问答集**：被维护者关闭的历史 issue，LLM-as-judge 三维 rubric（正确性/引用支撑/可用性）+ 引用精确率程序硬指标；
 - **工具选择集**：查询 → 期望工具，验证 tool description 质量；
-- **判官偏差缓解**：双判官、位置交换、temperature=0。
+- **判官偏差缓解**：temperature=0（已实现）；双判官、位置交换在 roadmap（未实现，不宣称）。
 
 ## 6. 演进路线
 

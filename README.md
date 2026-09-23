@@ -70,6 +70,16 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 
 报告生成于 `docs/eval-report/`，可通过 `python -m eval.run_eval` 复现。
 
+### 分诊迭代记录（如实）
+
+判别规则增强后基线 0.4886 → **0.4922**（77 样本 4 类），目标（macro≥0.55 / feature≥0.70）未达成。27 例错误三层根因（详见 triage 报告分析）：
+
+1. 判别规则反作用：how-to 求助被"疑问句+请求行为改变"规则推向 feature（6 例）；
+2. invalid 标注口径冲突：duplicate/wontfix 样本的内容本就是 bug/feature 的重复提交；
+3. 带错误日志的 enhancement 仍是硬案例。
+
+下一轮方向：① how-to 求助明确归 question；② invalid 类改用真实"信息不足"样本或调整口径；③ question 类补索引集 few-shot。
+
 ## 技术栈
 
 | 层 | 组件 |

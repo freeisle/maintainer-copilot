@@ -55,7 +55,7 @@ uv run mc demo-review freeisle/ragent 3
 ## 6. 评测体系（1 分钟）
 
 展示 `docs/eval-report/` 下的报告：
-- 分诊基线：apache/dubbo 真实标签，macro-F1 0.49（bug 0.86）；
+- 分诊基线：dubbo+rocketmq 真实标签弱标注 77 条 4 类，macro-F1 0.49（bug 0.79 / feature 0.50 / question 0.68）；27 例错误三层根因已在报告分析（判别规则反作用 / invalid 标注口径冲突 / 带日志的 enhancement 硬案例），下一轮方向明确；
 - 问答基线：LLM-as-judge 三维 rubric，收紧引用约束后 correctness 3.6 / citation_support 3.6（初版 2.7/2.2）；
 - 工具选择：25 条真实查询准确率 1.00，模糊描述消融 0.92（描述质量贡献可量化）；
 - 讲迭代故事：首轮 QA 低分 → 定位判官引用编号错配（评测框架自身 bug）→ 修复重跑 → Prompt 收紧再迭代，全程 commit 可追溯。
