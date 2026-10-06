@@ -1,5 +1,12 @@
 """评测指标单测。"""
-from eval.metrics import citation_precision, macro_f1, retrieval_hit_at_k
+from eval.metrics import (
+    citation_precision,
+    doc_key,
+    macro_f1,
+    mrr_at_k,
+    recall_at_k,
+    retrieval_hit_at_k,
+)
 
 
 def test_macro_f1_perfect() -> None:
@@ -18,6 +25,25 @@ def test_macro_f1_mixed() -> None:
 def test_retrieval_hit_at_k() -> None:
     assert retrieval_hit_at_k({"d1"}, ["d1", "d2", "d3"], k=3) == 1.0
     assert retrieval_hit_at_k({"d9"}, ["d1", "d2", "d3"], k=3) == 0.0
+
+
+def test_mrr_at_k() -> None:
+    assert mrr_at_k({"a"}, ["x", "a", "y"], k=3) == 0.5
+    assert mrr_at_k({"a"}, ["a", "y"], k=3) == 1.0
+    assert mrr_at_k({"a"}, ["x", "y"][:1], k=1) == 0.0
+
+
+def test_recall_at_k() -> None:
+    assert recall_at_k({"a", "b"}, ["a", "x", "b"], k=3) == 1.0
+    assert recall_at_k({"a", "b"}, ["a", "x", "y"], k=3) == 0.5
+    assert recall_at_k(set(), ["a"], k=3) == 0.0
+
+
+def test_doc_key() -> None:
+    assert doc_key({"source": "code", "path": "a/b.java"}) == "a/b.java"
+    assert doc_key({"source": "doc", "path": "README.md", "meta": {}}) == "README.md"
+    assert doc_key({"source": "issue", "path": "", "meta": {"issue": 42}}) == "issue#42"
+    assert doc_key({"source": "issue", "path": "x", "meta": {}}) == "x"
 
 
 def test_citation_precision() -> None:

@@ -1,8 +1,11 @@
-"""一键评测：triage(分诊 macro-F1) / qa(LLM-as-judge 三维 rubric + 硬指标)。
+"""一键评测：triage(分诊 macro-F1) / qa(LLM-as-judge 三维 rubric + 硬指标)
+/ retrieval(检索 hit@k + MRR + Recall + 分通道诊断)。
 
 用法:
   uv run python -m eval.run_eval --suite triage --repo eval/dubbo
   uv run python -m eval.run_eval --suite qa
+  uv run python -m eval.run_eval --suite retrieval --check        # 标注核验(不打分)
+  uv run python -m eval.run_eval --suite retrieval --no-rerank    # 消融: 关闭 rerank
 """
 import argparse
 import asyncio
@@ -29,7 +32,7 @@ _fh = logging.FileHandler(_progress_log, encoding="utf-8")
 _fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
 logging.getLogger().addHandler(_fh)
 
-SUITES = ("qa", "triage", "tool_selection")
+SUITES = ("qa", "triage", "tool_selection", "retrieval")
 MAX_SAMPLE_RETRIES = 3  # 单样本瞬时故障(LLM 连接/余额抖动)的重试上限
 DATASETS = Path(__file__).parent / "datasets"
 REPORT_DIR = Path(__file__).resolve().parent.parent / "docs" / "eval-report"
@@ -238,12 +241,139 @@ async def run_tool_selection_suite(ablate: bool = False) -> dict:
     return report
 
 
+async def run_retrieval_suite(
+    limit: int = 0,
+    k: int = 8,
+    rewrite: bool = True,
+    rerank: bool = True,
+    check: bool = False,
+) -> dict:
+    """检索评测: 问题 -> 标注文档键的 hit@1/3/k + MRR + Recall + 分通道诊断。
+
+    - 检索口径与线上 SolverWorker 一致: 原问题 + LLM 改写(≤2 条), 多查询检索后 merge_results
+    - rerank=False 做融合排序消融; rewrite=False 走纯本地链路(无 LLM 调用)
+    - check=True 只校验标注是否存在于知识库并输出 top-k(标注维护用), 不打分
+    """
+    from maintainer_copilot.models.llm import ModelProvider
+    from maintainer_copilot.rag.query_rewriter import QueryRewriter
+    from maintainer_copilot.rag.reranker import Reranker
+    from maintainer_copilot.rag.retriever import HybridRetriever
+    from maintainer_copilot.workers.solver import merge_results
+
+    data = load_dataset("retrieval")
+    if limit:
+        data = data[:limit]
+    retriever = HybridRetriever(reranker=Reranker())
+    if not rerank:
+        # 构造器传 None 会落到默认 Reranker, 消融必须显式置空
+        retriever.reranker = None
+    rewriter = QueryRewriter(ModelProvider()) if rewrite else None
+
+    async def _search(repo: str, question: str) -> list[str]:
+        """按线上口径检索, 返回去重的文档键列表(保持排名)。"""
+        queries = [question] + (await rewriter.rewrite(question) if rewriter else [])
+        batches = [await retriever.retrieve(q, repo, top_k=k) for q in queries[:3]]
+        keys: list[str] = []
+        for doc in merge_results(batches)[:k]:
+            key = metrics.doc_key(doc)
+            if key and key not in keys:
+                keys.append(key)
+        return keys
+
+    async def _channel_hits(repo: str, question: str, relevant: set[str]) -> dict:
+        """分通道命中诊断: exact/dense/sparse 各自 top-k 是否命中标注。"""
+        hits: dict = {}
+        for name, channel in (
+            ("exact", retriever._exact),
+            ("dense", retriever._dense),
+            ("sparse", retriever._sparse),
+        ):
+            try:
+                ids = await channel(repo, question, k)
+                docs = await retriever._fetch(repo, ids)
+                hits[name] = bool({metrics.doc_key(d) for d in docs} & relevant)
+            except Exception as exc:  # noqa: BLE001 - 单通道故障不阻断整体评测
+                hits[name] = f"error: {exc}"
+        return hits
+
+    per_item: list[dict] = []
+    for i, item in enumerate(data, 1):
+        repo = item["repo"]
+        question = item["question"]
+        relevant = set(item.get("relevant") or [])
+        retrieved = await _search(repo, question)
+        if check:
+            found = sorted(relevant & set(retrieved))
+            missing = sorted(relevant - set(retrieved))
+            per_item.append(
+                {
+                    "id": item.get("id"),
+                    "repo": repo,
+                    "question": question,
+                    "labels_found": found,
+                    "labels_missing": missing,
+                    "top_k": retrieved,
+                    "note": item.get("note", ""),
+                }
+            )
+            logger.info(
+                "[%d/%d][check] %s 标注命中 %d/%d", i, len(data), question[:30], len(found), len(relevant)
+            )
+            continue
+        record = {
+            "id": item.get("id"),
+            "repo": repo,
+            "question": question,
+            "relevant": sorted(relevant),
+            "retrieved": retrieved,
+            "hit@1": metrics.retrieval_hit_at_k(relevant, retrieved, k=1),
+            "hit@3": metrics.retrieval_hit_at_k(relevant, retrieved, k=3),
+            f"hit@{k}": metrics.retrieval_hit_at_k(relevant, retrieved, k=k),
+            "mrr": metrics.mrr_at_k(relevant, retrieved, k=k),
+            "recall": metrics.recall_at_k(relevant, retrieved, k=k),
+            "channel_hits": await _channel_hits(repo, question, relevant),
+        }
+        per_item.append(record)
+        logger.info(
+            "[%d/%d] %s hit@%d=%s mrr=%.2f recall=%.2f channels=%s",
+            i, len(data), question[:30], k, record[f"hit@{k}"], record["mrr"], record["recall"],
+            record["channel_hits"],
+        )
+
+    def avg(key: str) -> float:
+        values = [r[key] for r in per_item if isinstance(r.get(key), (int, float))]
+        return round(sum(values) / len(values), 4) if values else -1.0
+
+    if check:
+        report = {"mode": "check", "samples": len(data), "items": per_item}
+        write_report("retrieval-check", report)
+        return report
+    report = {
+        "samples": len(data),
+        "k": k,
+        "rewrite": rewrite,
+        "rerank": rerank,
+        "hit@1": avg("hit@1"),
+        "hit@3": avg("hit@3"),
+        f"hit@{k}": avg(f"hit@{k}"),
+        "mrr": avg("mrr"),
+        "recall": avg("recall"),
+        "per_item": per_item,
+    }
+    write_report("retrieval", report)
+    return report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="评测入口")
     parser.add_argument("--suite", choices=SUITES, required=True)
     parser.add_argument("--repo", help="triage 套件的知识库键")
     parser.add_argument("--limit", type=int, default=0, help="只跑前 N 条(调试用)")
     parser.add_argument("--ablate", action="store_true", help="tool_selection: 模糊描述消融对照")
+    parser.add_argument("--k", type=int, default=8, help="retrieval: hit@k/MRR/Recall 的截断位置")
+    parser.add_argument("--no-rewrite", action="store_true", help="retrieval: 关闭 LLM 查询改写")
+    parser.add_argument("--no-rerank", action="store_true", help="retrieval: 关闭 rerank(融合排序消融)")
+    parser.add_argument("--check", action="store_true", help="retrieval: 仅校验标注是否存在于知识库")
     args = parser.parse_args()
     if args.suite == "triage":
         if not args.repo:
@@ -258,6 +388,25 @@ def main() -> None:
             f"avg: correctness={report['avg_correctness']} citation_support={report['avg_citation_support']} "
             f"usefulness={report['avg_usefulness']} judge_errors={report['judge_errors']}"
         )
+    elif args.suite == "retrieval":
+        report = asyncio.run(
+            run_retrieval_suite(
+                limit=args.limit,
+                k=args.k,
+                rewrite=not args.no_rewrite,
+                rerank=not args.no_rerank,
+                check=args.check,
+            )
+        )
+        if args.check:
+            missing = [r["id"] for r in report["items"] if r["labels_missing"]]
+            print(f"标注校验: {report['samples']} 条, 存在缺失标注的条目: {missing or '无'}")
+        else:
+            print(
+                f"hit@1={report['hit@1']} hit@3={report['hit@3']} hit@{args.k}={report[f'hit@{args.k}']} "
+                f"mrr={report['mrr']} recall={report['recall']} "
+                f"(samples={report['samples']}, rewrite={report['rewrite']}, rerank={report['rerank']})"
+            )
     else:
         report = asyncio.run(run_tool_selection_suite(args.ablate))
         print(f"tool selection accuracy: {report['accuracy']:.4f} (samples={report['samples']}, ablate={report['ablate']})")
