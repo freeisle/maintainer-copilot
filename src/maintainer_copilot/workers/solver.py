@@ -1,4 +1,4 @@
-"""SolverWorker 子图：代码库问答。
+"""SolverWorker 节点：代码库问答。
 
 链路: QueryRewrite(LLM 术语补全) -> Retrieve(混合检索) -> Answer(带引用) -> 引用校验
 设计要点:

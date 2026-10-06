@@ -1,4 +1,4 @@
-"""TriageWorker 子图：Issue 分诊。
+"""TriageWorker 节点：Issue 分诊。
 
 链路: 相似 issue 检索(历史 label 作弱标注参考) -> 四分类 -> label 建议 + 回复草稿
 设计要点:

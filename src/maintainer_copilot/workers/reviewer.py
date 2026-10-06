@@ -1,4 +1,4 @@
-"""ReviewWorker 子图：PR 初审。
+"""ReviewWorker 节点：PR 初审。
 
 链路: 拉取 PR 元信息 + diff -> 解析改动文件 -> 混合检索相关代码/文档
     -> 四维初审意见(带 [n] 引用) -> Reflector 自审 -> HumanGate -> Executor

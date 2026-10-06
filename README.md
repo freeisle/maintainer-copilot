@@ -4,6 +4,8 @@
 
 > 一句话：把你的 issue 从「积压清单」变成「已分诊的待审草稿」。
 
+**Agent 定位：workflow-first Agent** —— 控制流由显式状态机 + 确定性闸门决定：路由用规则、自审用可枚举判定、写操作只经确定性 Executor 执行；LLM 只承担节点内的语言任务，不掌握流程决策与写权限。
+
 ## 为什么需要它
 
 中小开源项目（1-3 人维护）的 issue 大量是重复问题、环境配置问题和无效 issue；维护者重复回答文档里写过的内容；新人 PR 缺乏初审。Maintainer Copilot 在维护者与 issue 队列之间加了一层可审计的 AI 助理：
@@ -67,6 +69,7 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 |---|---|---|---|
 | 分诊 | macro-F1 | **0.49**（bug 0.79 / feature 0.50 / question 0.68 / invalid 0.00） | dubbo+rocketmq 真实标签 77 条 4 类回归集；invalid 类为 duplicate/wontfix 标注口径所致，详见报告分析 |
 | 问答 | LLM-as-judge 三维 rubric | correctness 3.6 / citation_support 3.6 / usefulness 2.7（5 分制） | 10 问 + 引用硬指标; 收紧引用约束后较初版 2.7/2.2/3.0 显著提升 |
+| 检索 | Hit@3 / Recall@5 / MRR | **0.75 / 0.5208 / 0.5417** | n=8（ragent 6 + 12306 2）单次运行，LLM 改写 temperature=0；主要瓶颈在召回层，详见 [retrieval-baseline](eval/reports/retrieval-baseline.md) |
 
 报告生成于 `docs/eval-report/`，可通过 `python -m eval.run_eval` 复现。
 
@@ -84,9 +87,9 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 
 | 层 | 组件 |
 |---|---|
-| Agent 编排 | LangGraph（状态机 / HITL interrupt / checkpoint） |
+| Agent 编排 | LangGraph（workflow-first 状态机 / 动态 HITL interrupt / InMemory checkpoint） |
 | RAG | pgvector + BM25 + RRF 融合 + BGE-reranker；tree-sitter AST 切分；BGE-M3 embedding |
-| 工具层 | 自研 GitHub 客户端（限流感知 / 重试 / 缓存）+ FastMCP 暴露 |
+| 工具层 | 自研 GitHub 客户端（限流感知 / 5xx 退避重试 / 内存缓存，13 个公开方法）+ FastMCP 暴露 3 个读工具 |
 | 服务 | FastAPI（webhook + HITL 审核台） |
 | 评测 | 分诊 F1 回归集 + LLM-as-judge（三维 rubric）+ 引用精确率硬指标 |
 | LLM | DeepSeek（主）/ Ollama（兜底），OpenAI 兼容协议 |
@@ -97,8 +100,22 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 |---|---|---|
 | M1 | 代码库问答 MVP（三源索引 + 混合检索 + 带引用回答） | ✅ |
 | M2 | 分诊 + HITL 闭环（webhook → 草稿 → 审核台 → 发布）+ 评测体系 | ✅ |
-| M2.5 | 引用约束收紧、PR 初审、长期记忆、工具选择评测、Skill 加载、增量更新、CI、采纳率采集 | ✅ |
+| M2.5 | 引用约束收紧、PR 初审、长期版本化偏好、工具选择评测、Skill 加载、增量更新、CI、采纳率采集 | ✅ |
 | 后续 | 双判官评测、分诊判别规则再迭代、A2A 工具服务化、后训练 | 🔲 |
+
+## 当前边界（如实记录）
+
+工程上尚未完成、或与常见预期不同的部分，主动列出以免误读：
+
+| 项 | 现状 |
+|---|---|
+| checkpoint | 当前为进程内 `InMemorySaver`（HITL 挂起 / 恢复可用）；生产级持久化 checkpoint 为后续增强 |
+| 编排粒度 | Supervisor + 3 Worker 均为 `add_node` 注册的普通节点函数；未使用 LangGraph 已编译子图 |
+| 工具层 | 已注册 3 个读工具（底层客户端 13 个公开方法：11 读 + 2 写）；Registry 的校验 / 超时 / 结构化错误对外经 MCP 暴露，图内 Worker 直接调用检索与 GitHub 客户端 |
+| 限流 | 429 快速失败不重试；5xx / 网络错误指数退避，最多 4 次尝试。「降级到本地索引」尚未接线 |
+| 检索指标 | baseline 已跑出：Hit@3=0.75 / Recall@5=0.5208 / MRR=0.5417（n=8，单次运行）；主要瓶颈在召回层；评测集规模待扩充 |
+| 判官 | 单判官 + `temperature=0`，与生成侧同源；交叉校验依赖程序硬指标（引用精确率）。双判官 / 位置交换在 roadmap |
+| 短期记忆 | `trim_messages`（滑动窗口 + 滚动摘要 + 任务锚点）已实现为独立模块并带单测，尚未接入主链路 |
 
 ## License
 
