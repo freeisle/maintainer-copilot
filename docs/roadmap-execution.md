@@ -94,3 +94,10 @@ GitHub 工具外层 retries=0，5xx/网络最多仍为客户端的 4 次；401/�
 
 `FederatedRetriever` 仅按维护者配置扩展仓库，限定并发/超时，按源内排名融合，给 ID 和引用附上 repo；本地快照与混合检索均可复用。Solver 默认工厂接入配置。
 验证：`pytest -q tests/test_federated.py tests/test_solver.py` → **11 passed**，覆盖双仓库真实快照进入回答、无授权仓库隔离、部分失败和全部失败。配置见 `docs/services.md`。
+
+阶段 8 提交：`c19dddb`。
+
+## 阶段 9：A2A 可选服务边界
+
+具体场景为多个维护工作流复用一个只读知识进程；Supervisor/HITL/Executor 仍在原进程。服务协议固定 A2A 0.3，客户端通过配置接入 Solver。
+`pytest -q tests/test_a2a.py tests/test_federated.py` → **4 passed**，包含 uvicorn 独立进程、实际 TCP HTTP 发现/请求响应；补充超时及 completed task get/cancel 契约测试。未开启公网服务，无自动写动作。

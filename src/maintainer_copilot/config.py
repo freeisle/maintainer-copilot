@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     local_index_path: Path = PROJECT_ROOT / "data" / "retrieval-snapshot.jsonl"
     retrieval_backend: Literal["hybrid", "local"] = "hybrid"
     federation_repos: dict[str, list[str]] = Field(default_factory=dict)
+    a2a_url: str = ""
+    a2a_public_url: str = "http://127.0.0.1:8010/a2a"
+    a2a_token: str = ""
+    a2a_allowed_repos: list[str] = Field(default_factory=list)
 
     # 本地路径
     data_dir: Path = PROJECT_ROOT / "data"

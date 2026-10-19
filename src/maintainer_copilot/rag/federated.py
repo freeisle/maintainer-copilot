@@ -36,10 +36,13 @@ class FederatedRetriever:
         return [{**d, "retrieval_warnings":failures} for d in diversify(ranked, top_k)]
 
 
-def configured_retriever():
+def configured_retriever(*, allow_remote=True):
     from ..config import get_settings
     from .local import LocalRetriever
     from .retriever import HybridRetriever
     settings = get_settings()
+    if allow_remote and settings.a2a_url:
+        from ..services.a2a_client import A2ARetriever
+        return A2ARetriever(settings.a2a_url, settings.a2a_token)
     backend = LocalRetriever(settings.local_index_path) if settings.retrieval_backend == "local" else HybridRetriever()
     return FederatedRetriever(backend, settings.federation_repos) if settings.federation_repos else backend
