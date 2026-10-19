@@ -87,7 +87,7 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 
 | 层 | 组件 |
 |---|---|
-| Agent 编排 | LangGraph（workflow-first 状态机 / 动态 HITL interrupt / InMemory checkpoint） |
+| Agent 编排 | LangGraph（workflow-first 状态机 / 动态 HITL interrupt / SQLite WAL 持久化 checkpoint） |
 | RAG | pgvector + BM25 + RRF 融合 + BGE-reranker；tree-sitter AST 切分；BGE-M3 embedding |
 | 工具层 | 自研 GitHub 客户端（限流感知 / 5xx 退避重试 / 内存缓存，13 个公开方法）+ FastMCP 暴露 3 个读工具 |
 | 服务 | FastAPI（webhook + HITL 审核台） |
@@ -101,7 +101,8 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 | M1 | 代码库问答 MVP（三源索引 + 混合检索 + 带引用回答） | ✅ |
 | M2 | 分诊 + HITL 闭环（webhook → 草稿 → 审核台 → 发布）+ 评测体系 | ✅ |
 | M2.5 | 引用约束收紧、PR 初审、长期版本化偏好、工具选择评测、Skill 加载、增量更新、CI、采纳率采集 | ✅ |
-| 后续 | 双判官评测、分诊判别规则再迭代、A2A 工具服务化、后训练 | 🔲 |
+| Roadmap 扩展 | 持久化/记忆/限流快照/评测扩充/联邦检索/A2A/Java MCP | ✅（详见验收记录） |
+| 待外部验证 | 历史索引清理、混合召回实库回归、Skill 语义回归、Langfuse 部署、业务后训练 | 🔲 |
 
 ## 当前边界（如实记录）
 
@@ -109,13 +110,30 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 
 | 项 | 现状 |
 |---|---|
-| checkpoint | 当前为进程内 `InMemorySaver`（HITL 挂起 / 恢复可用）；生产级持久化 checkpoint 为后续增强 |
+| checkpoint | 默认单机 SQLite WAL/FULL，跨进程 HITL 恢复已验证；不承诺分布式高可用或 GitHub exactly-once，见 [持久化说明](docs/persistence.md) |
 | 编排粒度 | Supervisor + 3 Worker 均为 `add_node` 注册的普通节点函数；未使用 LangGraph 已编译子图 |
 | 工具层 | 已注册 3 个读工具（底层客户端 13 个公开方法：11 读 + 2 写）；Registry 的校验 / 超时 / 结构化错误对外经 MCP 暴露，图内 Worker 直接调用检索与 GitHub 客户端 |
-| 限流 | 429 快速失败不重试；5xx / 网络错误指数退避，最多 4 次尝试。「降级到本地索引」尚未接线 |
-| 检索指标 | baseline 已跑出：Hit@3=0.75 / Recall@5=0.5208 / MRR=0.5417（n=8，单次运行）；主要瓶颈在召回层；评测集规模待扩充 |
+| 限流 | 429/明确限流 403 接入本地快照证据降级；鉴权失败/超时不触发此降级；GitHub 外层不重复重试 |
+| 检索指标 | baseline 已跑出：Hit@3=0.75 / Recall@5=0.5208 / MRR=0.5417（n=8，单次运行）；原 baseline 保留；另增 n=24/3 仓库 v2 和离线词法对照，不能与 n=8 混合检索直接比较 |
 | 判官 | 单判官 + `temperature=0`，与生成侧同源；交叉校验依赖程序硬指标（引用精确率）。双判官 / 位置交换在 roadmap |
-| 短期记忆 | `trim_messages`（滑动窗口 + 滚动摘要 + 任务锚点）已实现为独立模块并带单测，尚未接入主链路 |
+| 短期记忆 | 已接入 LangGraph 入口、Solver 上下文和 CLI；同一 checkpoint 保存有界历史，线程隔离及任务锚点测试通过 |
+
+## 扩展功能与验收
+
+- [实施顺序、测试与阶段提交](docs/roadmap-execution.md) / [当前 Roadmap](docs/roadmap.md)
+- [联邦检索、A2A 与 Java MCP](docs/services.md)
+- [Skill 候选、人工审核和回滚](docs/skill-evolution.md)
+- [本地 trace 与 Langfuse 部署准备](docs/observability.md)
+- [后训练数据门槛和离线训练流程](docs/posttraining.md)
+
+```powershell
+# 无 PostgreSQL 的独立词法评测；首次 --build 构建快照
+uv run python -m eval.offline_retrieval --build
+# 后续复评相同快照，保留报告与源文件 hash
+uv run python -m eval.offline_retrieval
+mvn -B -f services/java-tools/pom.xml test package
+uv run pytest -q
+```
 
 ## License
 

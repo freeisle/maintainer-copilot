@@ -12,6 +12,7 @@ flowchart TB
         UI["Web 审核台 (HITL)"]
     end
     subgraph C["Agent 核心 · LangGraph 状态机"]
+        MW["Memory 有界上下文"]
         RT["Route 意图路由"]
         TW["TriageWorker"]
         SW["SolverWorker"]
@@ -33,27 +34,29 @@ flowchart TB
         GH[("GitHub REST API")]
         LLM[("LLM (DeepSeek / Ollama 兜底)")]
     end
-    WH --> RT
-    CLI --> RT
+    WH --> MW
+    CLI --> MW
+    MW --> RT
     UI --> HG
     RT --> TW & SW & RW
     TW & SW & RW --> RF --> HG
     HG -->|批准| EX --> GHC --> GH
-    HG -->|驳回/编辑| RT
+    HG -->|编辑/驳回| EX
     TW & SW & RW --> IDX --> PG
     REG --> MCP
     REG -.-> GHC
     C --> LLM
 ```
 
-> 节点说明：`Route / Triage / Solve / Review / Reflector / gate / degrade / executor` 为图中 **8 个真实节点**（均以 `add_node` 注册的普通函数）。
+> 节点说明：`memory / Route / Triage / Solve / Review / Reflector / gate / degrade / executor` 为图中 **9 个真实节点**（均以 `add_node` 注册的普通函数）。
 > `REG`（Tool Registry）**不在图执行链路上**（图中以虚线表示）：Worker 直接调用检索与 GitHub 客户端，Registry 的校验 / 超时 / 结构化错误对外经 `MCP` 暴露。Executor 在批准后直接调用 `GitHubClient` 完成写操作。
 
 ## 2. 状态机
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Route
+    [*] --> Memory
+    Memory --> Route
     Route --> Triage: issue 事件
     Route --> Solve: 问答请求
     Route --> Review: PR 事件
@@ -64,9 +67,10 @@ stateDiagram-v2
     Reflector --> Triage: 重写 (≤2 次)
     Reflector --> Solve: 重写 (≤2 次)
     Reflector --> Review: 重写 (≤2 次)
-    Reflector --> HumanGate: 失败降级仅提示
+    Reflector --> Degrade: 重写耗尽
+    Degrade --> Execute: 不发布
     HumanGate --> Execute: 批准
-    HumanGate --> [*]: 驳回
+    HumanGate --> Execute: 驳回(不发布)/编辑
     Execute --> [*]
 ```
 
@@ -77,7 +81,7 @@ stateDiagram-v2
 | 决策 | 选择 | 理由 |
 |---|---|---|
 | 单 Agent vs Multi-Agent | Supervisor + 3 Worker 节点 | 上下文隔离、职责单一可独立评测、状态机显式可控；单 Agent + 多工具在工具数增长后选择准确率下降且评测困难 |
-| A2A vs 单进程节点通信 | 类型化共享状态 | 单机部署无跨服务边界；A2A 留给工具服务化阶段（roadmap） |
+| A2A vs 单进程节点通信 | 默认共享状态，可选只读知识服务 | A2A 0.3 Agent Card/JSON-RPC 服务可由 Solver 配置调用；HITL/写操作仍在主进程，见 services.md |
 | 框架 | LangGraph | 状态机显式控制 + 动态 HITL interrupt 成熟；编排定位 **workflow-first Agent**，流程决策不交给 LLM |
 | 向量库 | pgvector | 规模不需要分布式 Milvus；SQL 管理索引、单 docker 服务 |
 | 混合检索 | 三通道：pgvector 向量 + 进程内 BM25 + 报错串精确检索；自实现 RRF 融合 + BGE-reranker 重排 | RRF 融合可解释可控，避免 Qdrant/ES 黑盒与额外服务 |
@@ -87,12 +91,12 @@ stateDiagram-v2
 
 ### 3.1 当前边界（如实）
 
-- **checkpoint**：`build_graph()` 默认分支尝试 `SqliteSaver`，但 `langgraph-checkpoint-sqlite` 未列入依赖，异常回退 → 运行时实际为**进程内 `InMemorySaver`**。动态 HITL interrupt + resume 可用；**跨进程恢复待持久化补全（后续计划）**。
-- **编排粒度**：8 个节点均为 `add_node` 注册的普通函数，**无已编译子图**参与编排。
+- **checkpoint**：默认 PersistentSaver，复用上游 SQLite schema，WAL/FULL、线程锁、异步桥接；初始化失败显式报错。跨进程三类 HITL 恢复通过，部署边界见 persistence.md。
+- **编排粒度**：9 个节点均为 `add_node` 注册的普通函数，**无已编译子图**参与编排。
 - **工具层**：已注册 3 个读工具（底层客户端 13 个公开方法：11 读 + 2 写）。Registry 的校验 / 超时 / 结构化错误对外经 MCP 暴露；**图内 Worker 不经过 Registry**，直接调用检索与 GitHub 客户端。
-- **限流降级**：429 抛出 `RateLimitExceeded` 快速失败不重试；5xx / 网络错误已实现指数退避（最多 4 次尝试）。**「429 降级到本地索引」为后续计划（未实现）**。
+- **限流降级**：MCP 读工具和 PR Worker 在 429/明确限流 403 时读取本地 JSONL 证据，标注 stale/degraded/reason；无快照明确拒答。401/普通403、超时、5xx 分类，不冒充实时结果；GitHub 单层重试最多 4 次。
 - **检索评测**：当前 retrieval baseline——dataset n=8，Hit@3=0.75，Recall@5=0.5208，MRR=0.5417（单次运行；LLM query rewrite temperature=0；主要瓶颈来自召回层——Recall@3=@5=@8 持平，提高 k 无收益；详见 `eval/reports/retrieval-baseline.md`）。
-- **短期记忆**：`memory/short_term.py` 的滑动窗口 + 滚动摘要 + 任务锚点已实现并带单测，**尚未接入主链路（后续计划）**。
+- **短期记忆**：memory 节点使用 RemoveMessage 替换裁剪历史，保留有界摘要/任务锚点；Solver 注入历史，Executor 写入已审核回复。同一线程禁止换仓库，新轮清空审批和旧执行目标。
 
 ## 4. 核心难点与解法
 
@@ -108,6 +112,14 @@ stateDiagram-v2
 - **检索集**：查询 → 期望文档（n=8，ragent 6 + 12306 2），指标为 hit@k / MRR / Recall；baseline 已跑出：Hit@3=0.75 / Recall@5=0.5208 / MRR=0.5417（单次运行），详见 `eval/reports/retrieval-baseline.md`；
 - **判官偏差缓解**：temperature=0（已实现）；判官与生成侧**同源**（同一 Provider），故以程序硬指标（引用精确率）作交叉校验；双判官、位置交换在 roadmap（未实现，不宣称）。
 
-## 6. 演进路线
+## 6. 可选扩展与验证边界
+
+- 本地快照/混合检索共享词法分词、去重和文档覆盖；显式 federation_repos 配置跨仓库范围和 repo 引用。n=24 离线对照保留原 baseline，实库混合回归仍待 PostgreSQL 可用。
+- Skill 反馈在 Executor 收集，周候选不自动启用；维护者审核形成追加版本，支持回滚。真实语义收益尚未验证。
+- Spring Boot MCP POM 工具由 Python 客户端实际 TCP 调用验证，独立于主图写执行器。
+- 默认关闭的无内容 OTLP trace 接入 Solver/LLM 和评测；完整 Langfuse 部署待 Docker。
+- 后训练从审批反馈导出，数据不足阻止训练；CPU 微型模型测试只验证训练工程链路。
+
+## 7. 演进路线
 
 见 [roadmap.md](roadmap.md)。

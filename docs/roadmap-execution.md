@@ -169,3 +169,5 @@ Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现
 本机未安装 pgvector，测试 embedding 为 double precision[]；因此不冒充 vector(1024) 实际索引迁移验证。原历史清理仍未执行、roadmap 保留 `[ ]`。
 
 最终完整回归 `pytest -q --basetemp=data/test-tmp-final-acceptance` → **154 passed, 1 warning**（anyio/Starlette 依赖弃用，无失败/跳过）；其后新增的 3 项 PostgreSQL 测试已单独实际执行通过。默认不提供 MC_TEST_DATABASE_URL 时这 3 项明确 skip，不连接生产数据库。
+
+PostgreSQL 补充验证提交：`2d15232`。
