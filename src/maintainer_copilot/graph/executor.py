@@ -24,6 +24,8 @@ def _record_decision(state: AgentState) -> None:
     if state.get("approval") not in ("approved", "edited", "rejected"):
         return
     try:
+        from ..skills.evolution import EvolutionStore
+        EvolutionStore().feedback(state)
         meta = state.get("draft_meta") or {}
         note = state.get("final_draft") or state.get("draft", "")
         get_store().record(

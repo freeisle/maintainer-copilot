@@ -1,5 +1,6 @@
 """Bound and replace graph history at each new turn, before routing."""
 from langchain_core.messages import RemoveMessage
+import uuid
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 
 from ..config import get_settings
@@ -21,5 +22,6 @@ def memory_node(state):
     messages, _ = trim_messages([as_dict(m) for m in state.get("messages", [])],
                                max_tokens=get_settings().memory_max_tokens, strict_budget=True)
     return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES), *messages],
+            "turn_id": uuid.uuid4().hex,
             "memory_repo": repo, "approval": "pending", "final_draft": "",
             "final_action": {}, "rewrite_count": 0, "reflect_advice": "", "reflection": {}}

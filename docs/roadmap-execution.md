@@ -79,3 +79,11 @@ RRF 单通道内重复 ID 不再重复加分；重排后优先覆盖不同文档
 PR 初审遇到限流时返回本地引用和“无法获得当前 diff，暂不能作初审结论”，不把历史代码冒充当前 PR。
 GitHub 工具外层 retries=0，5xx/网络最多仍为客户端的 4 次；401/普通403、超时分别返回 auth/timeout/service，不触发索引降级。
 验证：`pytest -q tests/test_rate_fallback.py tests/test_github_client.py tests/test_mcp.py tests/test_reviewer.py` → **21 passed**；补充 PR 实际 HTTP→快照证据测试通过（修正测试初版错误 Accept 头）。
+
+阶段 6 提交：`d07fb0e`。
+
+## 阶段 7：Skill 反馈与审核
+
+原 adoption note 仅 300 字，新增完整反馈表（不改旧表）、周级候选、审核记录与追加版本历史；候选不自动生效，版本冲突拒绝覆盖。生产 skill_context 读取审核后的 FAQ overlay，回滚无需修改代码文件。
+`scripts/skill_evolution.py` 提供本机生成/查看/审核/回滚命令；`eval/skill_regression.py` 在不激活候选的前提下比较真实 Solver QA 输出和引用硬指标。
+验证：`pytest -q tests/test_evolution.py tests/test_skills.py tests/test_adoption.py tests/test_solver.py` → **22 passed**。这验证工程闭环，不替代真实候选的语义质量评测；后者依赖真实反馈与检索后端，任务保留未完成。详见 `docs/skill-evolution.md`。

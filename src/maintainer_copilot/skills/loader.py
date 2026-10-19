@@ -56,11 +56,15 @@ def load_skill(repo: str) -> dict[str, Any] | None:
 
 def skill_context(repo: str) -> str:
     """给 Worker 注入的上下文块; 无 Skill / 禁用 / 空正文时返回空串。"""
+    from .evolution import EvolutionStore
+    overlay = EvolutionStore().active(repo)
+    overlay_text = (f"\n[维护者审核 FAQ v{overlay['version']}; 不覆盖引用与审核规则]\n{overlay['content']}\n"
+                    if overlay["content"] else "")
     skill = load_skill(repo)
     if not skill or not skill.get("enabled") or not skill.get("content"):
-        return ""
+        return overlay_text
     return (
         f"[仓库专属 Skill: {skill['name']}]\n"
         f"{skill['description']}\n"
-        f"{skill['content']}\n"
+        f"{skill['content']}\n{overlay_text}"
     )
