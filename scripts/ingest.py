@@ -25,20 +25,33 @@ DOC_SUFFIXES = {".md", ".mdx", ".rst", ".txt", ".adoc"}
 CODE_SUFFIXES = {".java", ".py", ".ts", ".tsx", ".js"}
 
 
+def repository_root(root: Path) -> Path:
+    """Scanning a subtree must preserve repository-relative citation identities."""
+    root = root.resolve()
+    for candidate in (root, *root.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return root  # exported trees without Git retain the explicit scan root
+
+
 def collect_docs(root: Path) -> list[tuple[str, str]]:
+    root = root.resolve()
+    base = repository_root(root)
     out: list[tuple[str, str]] = []
     for p in sorted(root.rglob("*")):
         if p.is_file() and p.suffix.lower() in DOC_SUFFIXES and ".git" not in p.parts:
-            rel = str(p.relative_to(root)).replace("\\", "/")
+            rel = p.relative_to(base).as_posix()
             out.append((rel, p.read_text(encoding="utf-8", errors="replace")))
     return out
 
 
 def collect_code(root: Path) -> list[tuple[str, str]]:
+    root = root.resolve()
+    base = repository_root(root)
     out: list[tuple[str, str]] = []
     for p in sorted(root.rglob("*")):
         if p.is_file() and p.suffix.lower() in CODE_SUFFIXES and ".git" not in p.parts:
-            rel = str(p.relative_to(root)).replace("\\", "/")
+            rel = p.relative_to(base).as_posix()
             out.append((rel, p.read_text(encoding="utf-8", errors="replace")))
     return out
 

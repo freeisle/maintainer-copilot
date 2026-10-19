@@ -1,0 +1,32 @@
+# Roadmap 执行记录
+
+起点：`3f1006c`，工作区干净；分支 `feat/roadmap-implementation`。不修改历史 baseline 或原始标注。
+
+|顺序 / 任务|现状与代码位置|补齐与验收|依赖 / 风险|
+|---|---|---|---|
+|1 重复入库|scripts/ingest.py 按扫描目录计算相对路径|统一仓库根路径；重复预览、事务备份和恢复；回归测试|旧库迁移必须显式执行|
+|2 评测扩充|eval/datasets/retrieval.jsonl 8 条|增加仓库、查询类型和困难样本；标签来源核验；保留旧集|本地源代码；不可修改标签迎合排序|
+|3 召回优化|rag/retriever.py 三通道|标识符分词、路径信号、去重与覆盖；同集对比 Hit/Recall/MRR|先固定评测；不承诺指标提升|
+|4 checkpoint|graph/supervisor.py 错用同步 saver 工厂|异步兼容持久化、跨进程 interrupt/resume、失败显式报告|单机 SQLite；写执行仍可能有外部幂等边界|
+|5 短期记忆|memory/short_term.py 未接线|图和 CLI 多轮裁剪、摘要、锚点、隔离验证|checkpoint；避免 add_messages 重复追加|
+|6 429 降级|GitHubClient 快速失败|只在限流时使用本地证据；空库拒答、错误分类与日志|检索；不能伪造 PR diff|
+|7 Skill 自迭代|决策记录只保存 300 字 note|完整反馈、周级候选、人工审核、版本回滚、生产加载|持久化与记忆；审核前不可生效|
+|8 联邦检索|单 repo 检索|显式允许列表、来源标记、隔离与失败处理、Solver 接线|召回；跨库资料不隐式混入|
+|9 A2A|单进程 Worker|独立只读知识服务、发现、请求响应、超时错误、实际端到端|联邦检索；不把自定义 RPC 冒称标准协议|
+|10 Java MCP|未实现|Spring Boot 服务 + Python MCP 客户端实际调用|Java/Maven、依赖下载|
+|11 Langfuse|未实现|自托管配置、trace 与评测接线、实际上报|Docker 当前未发现；外部运行验证可能阻塞|
+|12 后训练|弱标注与 HITL 数据量待检查|收集、质量门槛、去泄漏划分、训练和基线对比流程|数据不足不声称已训练或达到收益|
+
+执行环境：使用 `.venv/Scripts/python.exe`；pytest 指定 `--basetemp=data/test-tmp-<阶段>`。默认 uv 缓存与 pytest 系统临时目录受沙箱权限限制。现有 PostgreSQL 只读连接探测超时；不输出连接凭据。
+
+每阶段记录测试和提交，只有全部验收条件满足才勾选 roadmap。
+
+## 阶段 1：双路径来源修复
+
+`scripts/ingest.py` 从 Git 根计算文档和代码路径，扫描 `docs/` 与全仓库产生相同 chunk 身份。
+`python -m scripts.dedup_index --repo owner/name` 默认仅预览；仅全文、标题、分段和仓库都相同的 `docs/` 别名可清理。
+显式 `--apply` 在同一事务内保存完整行（包括向量）到 `chunk_alias_backups` 后删除别名；`--restore <batch>` 恢复且不覆盖更新后的行。
+执行前备份数据库；执行后重启检索进程以清空 BM25 缓存。本轮未执行现有数据删除。
+
+验证：`.venv/Scripts/python.exe -m pytest -q --basetemp=data/test-tmp-verified` → **111 passed**（包含 109 项既有测试）。
+Windows 沙箱在仓库内创建的 pytest 私有目录同样遇到 ACL 错误；正常权限执行通过。PostgreSQL 在沙箱外重试仍超时，因此迁移实库验收未完成。
