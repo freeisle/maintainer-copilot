@@ -19,6 +19,7 @@ from .reflector import MAX_REWRITES, reflector_node
 from .route import route_node
 from .state import AgentState
 from .checkpoint import PersistentSaver
+from ..memory.workflow import memory_node
 
 
 def route_after_start(state: AgentState) -> str:
@@ -69,6 +70,7 @@ def build_graph(checkpointer: BaseCheckpointSaver | None = None):
         checkpointer = PersistentSaver(get_settings().checkpoint_dir / "checkpoints.sqlite")
 
     graph = StateGraph(AgentState)
+    graph.add_node("memory", memory_node)
     graph.add_node("route", route_node)
     graph.add_node("triage", triage_node)
     graph.add_node("solve", solver_node)
@@ -78,7 +80,8 @@ def build_graph(checkpointer: BaseCheckpointSaver | None = None):
     graph.add_node("degrade", _degrade_node)
     graph.add_node("executor", executor_node)
 
-    graph.add_edge(START, "route")
+    graph.add_edge(START, "memory")
+    graph.add_edge("memory", "route")
     graph.add_conditional_edges("route", route_after_start, ["triage", "solve", "review"])
     for worker in ("triage", "solve", "review"):
         graph.add_edge(worker, "reflector")

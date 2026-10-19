@@ -21,7 +21,7 @@ def _record_decision(state: AgentState) -> None:
     仅记录人工决策: 闸门恢复后 state 里必有 approval 键;
     自审降级路径没有 approval 键, 不是人工决策, 不记录。
     """
-    if "approval" not in state:
+    if state.get("approval") not in ("approved", "edited", "rejected"):
         return
     try:
         meta = state.get("draft_meta") or {}
@@ -57,7 +57,8 @@ async def executor_node(state: AgentState) -> dict[str, Any]:
     settings = get_settings()
     if settings.dry_run:
         logger.info("[dry-run] 跳过真实写操作: %s", {k: v for k, v in actions.items()})
-        return {"final_action": {"executed": True, "dry_run": True, "actions": actions}}
+        return {"final_action": {"executed": True, "dry_run": True, "actions": actions},
+                "messages": [{"role": "assistant", "content": draft}]}
     client = GitHubClient(token=settings.github_token)
     results: dict[str, Any] = {}
     if number:
@@ -68,4 +69,5 @@ async def executor_node(state: AgentState) -> dict[str, Any]:
         except Exception as exc:  # noqa: BLE001 - 标签不存在时 GitHub 整体拒绝, 不影响评论发布
             logger.warning("标签写入失败(评论已发布, 忽略标签错误): %s", exc)
             results["labels_error"] = str(exc)
-    return {"final_action": {"executed": True, "dry_run": False, "results": results}}
+    return {"final_action": {"executed": True, "dry_run": False, "results": results},
+            "messages": [{"role": "assistant", "content": draft}]}

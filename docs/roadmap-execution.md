@@ -60,3 +60,13 @@ RRF 单通道内重复 ID 不再重复加分；重排后优先覆盖不同文档
 修复原来把 context manager 当 saver、且同步 saver 不支持 astream 的问题。新增 PersistentSaver 复用上游存储并桥接异步调用，适配现有两个事件循环。依赖及 lock 已更新；保留原依赖镜像地址，避免无关锁文件重写。
 审批 API 校验 decision、拒绝空编辑及已处理项重复请求。
 验证：`pytest -q tests/test_checkpoint_persistence.py tests/test_graph.py tests/test_webhook.py` → **9 passed**。三个独立进程重启场景分别验证 approved/edited/rejected。详见 `docs/persistence.md`。
+
+阶段 4 提交：`6457dce`。
+
+## 阶段 5：短期记忆接线
+
+图新增 memory 入口，使用 LangGraph RemoveMessage 替换历史而非把裁剪结果再次追加；同一 checkpoint 存储摘要，不新增记忆数据库。Solver 将历史传给回答模型，Executor 将审核后的回复加入历史。
+新轮次清除旧审批、改写计数、执行结果，防止上轮批准状态泄漏；同一 thread_id 不允许切换仓库。
+`MC_MEMORY_MAX_TOKENS=4000` 控制图预算；CLI 同样启用严格裁剪。滚动摘要只保留一个前缀并限制长度；极长单条消息会截短，普通任务锚点保持原文。
+首次测试发现旧 trim 契约要求完整保留最近消息；新增 `strict_budget` 可选参数保持旧调用兼容，生产入口显式启用。
+验证：`pytest -q tests/test_memory.py tests/test_workflow_memory.py tests/test_solver.py tests/test_executor.py tests/test_adoption.py` 修复后 **28 passed**；补充 Solver 历史进入 LLM 请求的专项测试。

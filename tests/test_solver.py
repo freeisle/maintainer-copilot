@@ -76,6 +76,17 @@ class _CapturingLLM:
 
 
 @pytest.mark.asyncio
+async def test_solver_passes_history_to_answer_model():
+    llm = _CapturingLLM("回答 [1]")
+    worker = SolverWorker(llm=llm, retriever=_DocRetriever(),
+                          prefs_getter=lambda *args: None, skill_getter=lambda repo: "")
+    history = [{"role": "user", "content": "任务锚点"}, {"role": "assistant", "content": "前一轮"}]
+    await worker.solve("继续解释", "a/b", history=history)
+    assert llm.calls[-1][:2] == history
+    assert "继续解释" in llm.calls[-1][-1]["content"]
+
+
+@pytest.mark.asyncio
 async def test_solve_injects_reply_language_preference() -> None:
     llm = _CapturingLLM("回答 [1]")
     worker = SolverWorker(  # type: ignore[arg-type]

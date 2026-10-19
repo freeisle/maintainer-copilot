@@ -30,6 +30,8 @@ async def run_chat() -> None:
         if text.lower() == "exit":
             return
         messages.append({"role": "user", "content": text})
+        from maintainer_copilot.memory.short_term import trim_messages
+        messages, _ = trim_messages(messages, strict_budget=True)
         result = await llm.chat(messages)
         tag = "(fallback)" if result.used_fallback else ""
         print(f"bot[{result.model}]{tag}> {result.content}")

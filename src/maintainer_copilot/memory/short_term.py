@@ -19,7 +19,7 @@ def estimate_tokens(text: str) -> int:
 
 
 def trim_messages(
-    messages: list[dict], max_tokens: int = 4000, keep_recent: int = 6
+    messages: list[dict], max_tokens: int = 4000, keep_recent: int = 6, *, strict_budget: bool = False
 ) -> tuple[list[dict], str | None]:
     """返回 (裁剪后的消息列表, 滚动摘要文本或 None)。
 
@@ -31,12 +31,34 @@ def trim_messages(
     total = sum(estimate_tokens(str(m.get("content", ""))) for m in messages)
     if total <= max_tokens:
         return messages, None
-    dropped = messages[1:-keep_recent] if len(messages) > keep_recent + 1 else []
-    summary = "\n".join(
-        f"[{m.get('role')}] {str(m.get('content', ''))[:200]}" for m in dropped
-    )
-    kept = [messages[0]]
+    if max_tokens < 64 or keep_recent < 1:
+        raise ValueError("max_tokens must be >=64 and keep_recent >=1")
+
+    def bounded(text, budget):
+        text = str(text)
+        while estimate_tokens(text) > budget:
+            text = text[:max(0, len(text) * 3 // 4)]
+        return text
+
+    # A single oversized message cannot be preserved in full under a hard budget.
+    anchor = {**messages[0], "content": bounded(messages[0].get("content", ""), max_tokens // 3)} if strict_budget else dict(messages[0])
+    recent = [dict(m) for m in messages[max(1, len(messages) - keep_recent):]]
+    recent_budget = max_tokens // 2
+    per_message = max(1, recent_budget // max(1, len(recent)))
+    if strict_budget:
+        for m in recent:
+            m["content"] = bounded(m.get("content", ""), per_message)
+    dropped = messages[1:max(1, len(messages) - keep_recent)]
+    pieces = []
+    for m in dropped:
+        content = str(m.get("content", ""))
+        if content.startswith(SUMMARY_PREFIX):
+            pieces.append(content[len(SUMMARY_PREFIX):].strip())
+        else:
+            pieces.append(f"[{m.get('role')}] {content[:200]}")
+    budget = max_tokens - sum(estimate_tokens(m["content"]) for m in [anchor, *recent]) if strict_budget else max_tokens // 3
+    summary = bounded("\n".join(pieces), max(0, budget - estimate_tokens(SUMMARY_PREFIX) - 1))
+    kept = [anchor]
     if summary:
         kept.append({"role": "system", "content": SUMMARY_PREFIX + "\n" + summary})
-    kept.extend(messages[-keep_recent:])
-    return kept, summary or None
+    return kept + recent, summary or None

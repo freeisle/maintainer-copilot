@@ -87,7 +87,7 @@ class SolverWorker:
         self.prefs_getter = prefs_getter or get_preference
         self.skill_getter = skill_getter or skill_context
 
-    async def solve(self, question: str, repo: str, advice: str = "") -> dict:
+    async def solve(self, question: str, repo: str, advice: str = "", history: list[dict] | None = None) -> dict:
         # 1. 查询改写: 原问题 + LLM 改写(术语补全/中英变体), 最多 3 条
         queries = [question] + await self.rewriter.rewrite(question)
         # 2. 多查询混合检索
@@ -116,8 +116,9 @@ class SolverWorker:
             for i, d in enumerate(docs, 1)
         )
         prompt = build_answer_prompt(repo, context, question, language_note, skill_note)
+        # History is conversational context, never a replacement for retrieved evidence.
         result = await self.llm.chat(
-            [{"role": "user", "content": prompt + advice_note}],
+            [*(history or []), {"role": "user", "content": prompt + advice_note}],
             temperature=0.1,
         )
         answer = result.content
@@ -148,5 +149,7 @@ def _get_worker() -> SolverWorker:
 async def solver_node(state: AgentState) -> dict[str, Any]:
     question = message_text(state["messages"][-1]) if state.get("messages") else ""
     repo = state.get("repo", "")
-    result = await _get_worker().solve(question, repo, advice=state.get("reflect_advice", ""))
+    from ..memory.workflow import as_dict
+    history = [as_dict(m) for m in state.get("messages", [])[:-1]]
+    result = await _get_worker().solve(question, repo, advice=state.get("reflect_advice", ""), history=history)
     return {"draft": result["draft"], "citations": result["citations"]}

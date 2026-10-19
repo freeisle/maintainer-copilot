@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@localhost:5432/maintainer_copilot"
     # Executor 演练模式: 默认 True(不发起真实 GitHub 写操作); 需显式关闭才真实发布
     dry_run: bool = True
+    memory_max_tokens: int = Field(default=4000, ge=64)
 
     # 本地路径
     data_dir: Path = PROJECT_ROOT / "data"

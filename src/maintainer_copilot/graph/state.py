@@ -40,6 +40,7 @@ class AgentState(TypedDict, total=False):
     repo: str  # "owner/name"
     task_type: str
     messages: Annotated[list[dict], add_messages]
+    memory_repo: str
     issue: dict  # {"title", "body", "number"} - triage 任务的输入
     pr: dict  # {"number", ...} - review 任务的输入(必须在 schema 内, 否则 LangGraph 丢弃该键)
     draft: str
