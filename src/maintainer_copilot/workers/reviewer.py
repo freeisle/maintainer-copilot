@@ -16,7 +16,8 @@ from ..config import get_settings
 from ..graph.state import AgentState
 from ..models.llm import ModelProvider
 from ..rag.retriever import HybridRetriever
-from ..tools.github_client import GitHubClient
+from ..tools.github_client import GitHubClient, RateLimitExceeded
+from ..tools.local_fallback import local_evidence
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +71,20 @@ class ReviewWorker:
 
     async def review(self, repo: str, pr_number: int, advice: str = "") -> dict:
         # 1. 拉取 PR 元信息与 diff
-        pr = await self.github.get_pull_request(repo, pr_number)
-        diff = await self.github.get_pull_diff(repo, pr_number)
+        pr = {}
+        try:
+            pr = await self.github.get_pull_request(repo, pr_number)
+            diff = await self.github.get_pull_diff(repo, pr_number)
+        except RateLimitExceeded:
+            logger.warning("github_rate_limit fallback=local_index worker=review repo=%s", repo)
+            evidence = await local_evidence(repo, pr.get("title") or f"PR {pr_number}")
+            docs = evidence["docs"]
+            draft = "GitHub 限流，无法获得当前 PR diff，暂不能作初审结论。"
+            draft += "\n本地历史资料（可能过期，仅供参考）：" if docs else "本地索引依据不足。"
+            draft += "".join(f"\n[{i}] {d['path']}: {d['text'][:300]}" for i, d in enumerate(docs, 1))
+            return {"draft": draft, "citations": [{"source":d["source"], "path":d["path"], "snippet":d["text"][:300]} for d in docs],
+                    "docs":docs, "pr_meta":{"issue_number":pr_number, "labels":[], "degraded":"github_rate_limit"},
+                    "truncated":False, "summary_mode":True}
         if not diff.strip():
             # 拉取失败/空 diff: 明确拒绝, 不让 LLM 在空 diff 上猜测(E2E 中曾生成误导性草稿)
             return {

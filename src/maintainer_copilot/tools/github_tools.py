@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from ..config import get_settings
 from .github_client import GitHubClient
 from .registry import ToolRegistry, ToolSpec
+from .local_fallback import ReadFallback
 
 
 class RepoIssueArgs(BaseModel):
@@ -26,12 +27,13 @@ class ReadFileArgs(BaseModel):
     ref: str | None = Field(default=None, description="分支/commit SHA, 默认主分支")
 
 
-def build_github_tools(client: GitHubClient | None = None) -> ToolRegistry:
-    client = client or GitHubClient(token=get_settings().github_token)
+def build_github_tools(client: GitHubClient | None = None, retriever=None) -> ToolRegistry:
+    client = ReadFallback(client or GitHubClient(token=get_settings().github_token), retriever)
     registry = ToolRegistry()
     registry.register(
         ToolSpec(
             name="get_issue",
+            retries=0,
             description=(
                 "读取指定编号 issue 的标题/正文/状态。查询里提到具体 issue 编号时使用;"
                 "要查找相似/历史 issue 用 search_issues, 要文件内容用 read_file。"
@@ -43,6 +45,7 @@ def build_github_tools(client: GitHubClient | None = None) -> ToolRegistry:
     registry.register(
         ToolSpec(
             name="search_issues",
+            retries=0,
             description=(
                 "在仓库内按关键词搜索历史 issue(标题+正文)。查询提到找相似问题/判断是否重复/"
                 "搜历史反馈时使用; 已知编号的单个 issue 用 get_issue, 代码或配置文件内容用 read_file。"
@@ -54,6 +57,7 @@ def build_github_tools(client: GitHubClient | None = None) -> ToolRegistry:
     registry.register(
         ToolSpec(
             name="read_file",
+            retries=0,
             description=(
                 "读取仓库内指定文件(查询中给出文件名/路径)的内容。需要某个文件的代码或配置时使用;"
                 "未指定文件的代码定位或通用技术问题选 none(走知识库检索);"

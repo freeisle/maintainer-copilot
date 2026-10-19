@@ -70,3 +70,12 @@ RRF 单通道内重复 ID 不再重复加分；重排后优先覆盖不同文档
 `MC_MEMORY_MAX_TOKENS=4000` 控制图预算；CLI 同样启用严格裁剪。滚动摘要只保留一个前缀并限制长度；极长单条消息会截短，普通任务锚点保持原文。
 首次测试发现旧 trim 契约要求完整保留最近消息；新增 `strict_budget` 可选参数保持旧调用兼容，生产入口显式启用。
 验证：`pytest -q tests/test_memory.py tests/test_workflow_memory.py tests/test_solver.py tests/test_executor.py tests/test_adoption.py` 修复后 **28 passed**；补充 Solver 历史进入 LLM 请求的专项测试。
+
+阶段 5 提交：`a7f5be2`；Solver 专项 **9 passed**。
+
+## 阶段 6：429 到本地索引
+
+设置 `MC_LOCAL_INDEX_PATH` 指向 JSONL 快照（可用阶段 3 的构建命令生成）。MCP 三个读工具仅在 429 或明确限流的 403 下返回带 degraded/stale/source 的证据，不伪装实时 API 结果；文件路径和 issue 编号使用精确匹配。
+PR 初审遇到限流时返回本地引用和“无法获得当前 diff，暂不能作初审结论”，不把历史代码冒充当前 PR。
+GitHub 工具外层 retries=0，5xx/网络最多仍为客户端的 4 次；401/普通403、超时分别返回 auth/timeout/service，不触发索引降级。
+验证：`pytest -q tests/test_rate_fallback.py tests/test_github_client.py tests/test_mcp.py tests/test_reviewer.py` → **21 passed**；补充 PR 实际 HTTP→快照证据测试通过（修正测试初版错误 Accept 头）。

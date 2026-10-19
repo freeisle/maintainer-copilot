@@ -34,3 +34,11 @@ class LocalRetriever:
             return []
         rows = index.search(query, max(top_k, 50))
         return diversify(rows, top_k) if self.enhanced else rows[:top_k]
+
+    def lookup(self, repo: str, *, path=None, issue=None) -> list[dict]:
+        """Exact lookup must not depend on lexical rank or corpus size."""
+        self._load()
+        index = self._indexes.get(repo)
+        return [r for r in index.rows if
+                (path is None or r["path"] == path) and
+                (issue is None or (r["source"] == "issue" and r.get("meta", {}).get("issue") == issue))] if index else []

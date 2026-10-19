@@ -8,6 +8,7 @@
 import asyncio
 import inspect
 import logging
+import httpx
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -33,6 +34,7 @@ class ToolResult:
     data: Any = None
     error: str = ""
     hint: str = ""
+    error_kind: str = ""
 
 
 class ToolRegistry:
@@ -90,7 +92,14 @@ class ToolRegistry:
                     ok=False,
                     error=f"工具 {name} 超时({spec.timeout}s)",
                     hint="建议改用本地索引或稍后重试",
+                    error_kind="timeout",
                 )
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                return ToolResult(ok=False, error=f"HTTP {status}",
+                                  error_kind="auth" if status in (401, 403) else "service")
+            except httpx.TimeoutException:
+                return ToolResult(ok=False, error="upstream timeout", error_kind="timeout")
             except Exception as exc:  # noqa: BLE001 - 工具失败统一转结构化错误
                 if attempt < spec.retries:
                     continue

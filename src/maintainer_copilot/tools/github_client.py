@@ -68,8 +68,10 @@ class GitHubClient:
                 try:
                     resp = await client.request(method, url, **kw)
                     self._sync_rate_limit(resp)
-                    if resp.status_code == 429:
-                        raise RateLimitExceeded(f"429 from {url}")
+                    if resp.status_code == 429 or (
+                        resp.status_code == 403 and resp.headers.get("X-RateLimit-Remaining") == "0"
+                    ):
+                        raise RateLimitExceeded(f"rate_limit status={resp.status_code} from {url}")
                     resp.raise_for_status()
                     if text:
                         data = resp.text
