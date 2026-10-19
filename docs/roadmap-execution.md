@@ -40,3 +40,15 @@ Windows 沙箱在仓库内创建的 pytest 私有目录同样遇到 ACL 错误�
 `python -m eval.run_eval --suite retrieval --dataset retrieval-v2` 接入原评测入口；默认仍使用旧集。
 验证：`pytest -q tests/test_retrieval_dataset.py` → **1 passed**；16 个新增案例的所有标注源码验证通过。
 新仓库需要先按 `local/maintainer-copilot` 键入库，线上混合指标仍受 PostgreSQL 不可达阻塞。
+
+阶段 2 提交：`384a302`。
+
+## 阶段 3：词法召回与来源覆盖
+
+复用 `LexicalIndex` 到线上 PostgreSQL BM25 与可独立运行的 `LocalRetriever`。保留完整标识符并补充 camelCase/snake_case 分词，加入路径信号。
+RRF 单通道内重复 ID 不再重复加分；重排后优先覆盖不同文档，保留后续同文件 chunk。旧 docs 别名按内容证据过滤，读取 SQL 强制 repo 范围。
+
+验证：`pytest -q tests/test_lexical.py tests/test_rrf.py tests/test_solver.py tests/test_dedup.py` → **16 passed**。
+`python -m eval.offline_retrieval --build` → n=24、同一源码快照旧/新词法对照：Hit@3 **0.5000→0.6250**，Recall@5 **0.5407→0.5903**，MRR@8 **0.4379→0.5486**。
+逐项排名、快照和标签 SHA256 见 `eval/reports/retrieval-offline-v2.json`。后续复跑去掉 `--build` 固定同一语料；快照存于忽略的 data 目录。
+这不是历史混合检索 baseline 的提升：未运行 embedding、query rewrite、reranker；困难语义召回仍有失败，不能用词法收益代替完整线上验证。因此任务保留未完成。

@@ -20,6 +20,8 @@ from .embedder import Embedder
 from .indexer import Vector
 from .query_rewriter import extract_error_strings
 from .reranker import Reranker
+from .lexical import LexicalIndex, diversify, tokenize
+from .dedup import deduplicate_docs
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +35,7 @@ def rrf_fuse(
     """融合多个排名列表(元素为 doc_id), 返回按融合分降序的 (doc_id, score)。"""
     scores: dict[str, float] = {}
     for ranked in ranked_lists:
-        for rank, doc_id in enumerate(ranked):
+        for rank, doc_id in enumerate(dict.fromkeys(ranked)):
             scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + rank + 1)
     fused = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
     return fused[:top_n] if top_n else fused
@@ -41,7 +43,7 @@ def rrf_fuse(
 
 def _tokenize(text: str) -> list[str]:
     """简单分词: 英文按单词, 中文逐字。"""
-    return re.findall(r"[a-zA-Z0-9_]+|[一-鿿]", text.lower())
+    return tokenize(text)
 
 
 class HybridRetriever:
@@ -54,7 +56,7 @@ class HybridRetriever:
         self.database_url = database_url or get_settings().database_url
         self.embedder = embedder or Embedder()
         self.reranker = reranker or Reranker()
-        self._bm25: dict[str, tuple[list[str], BM25Okapi]] = {}
+        self._bm25: dict[str, LexicalIndex] = {}
 
     async def _conn(self):
         import psycopg
@@ -103,29 +105,25 @@ class HybridRetriever:
             logger.info("构建 BM25 索引: %s", repo)
             conn = await self._conn()
             try:
-                cur = await conn.execute("SELECT id, content FROM chunks WHERE repo = %s", (repo,))
+                cur = await conn.execute(f"SELECT {_FETCH_COLS} FROM chunks WHERE repo = %s ORDER BY id", (repo,))
                 rows = await cur.fetchall()
             finally:
                 await conn.close()
             if not rows:
                 return []
-            ids = [r[0] for r in rows]
-            corpus = [_tokenize(r[1]) for r in rows]
-            self._bm25[repo] = (ids, BM25Okapi(corpus))
-        ids, index = self._bm25[repo]
-        scores = index.get_scores(_tokenize(query))
-        ranked = sorted(zip(ids, scores), key=lambda item: item[1], reverse=True)[:k]
-        return [doc_id for doc_id, score in ranked if score > 0]
+            docs = [dict(id=r[0], text=r[1], source=r[2], path=r[3], meta=r[4], repo=repo) for r in rows]
+            self._bm25[repo] = LexicalIndex(docs)
+        return [row["id"] for row in self._bm25[repo].search(query, k)]
 
     async def _fetch(self, repo: str, ids: list[str]) -> list[dict]:
         conn = await self._conn()
         try:
             cur = await conn.execute(
-                f"SELECT {_FETCH_COLS} FROM chunks WHERE id = ANY(%s)", (ids,)
+                f"SELECT {_FETCH_COLS} FROM chunks WHERE repo = %s AND id = ANY(%s)", (repo, ids)
             )
             rows = await cur.fetchall()
             by_id = {
-                r[0]: {"id": r[0], "text": r[1], "source": r[2], "path": r[3], "meta": r[4]}
+                r[0]: {"id": r[0], "text": r[1], "source": r[2], "path": r[3], "meta": r[4], "repo": repo}
                 for r in rows
             }
             return [by_id[i] for i in ids if i in by_id]
@@ -142,7 +140,7 @@ class HybridRetriever:
         fused = rrf_fuse([exact_ids, dense_ids, sparse_ids], k=RRF_K, top_n=rerank_pool)
         if not fused:
             return []
-        docs = await self._fetch(repo, [doc_id for doc_id, _ in fused])
+        docs = deduplicate_docs(await self._fetch(repo, [doc_id for doc_id, _ in fused]))
         if self.reranker is not None:
-            return self.reranker.rerank(query, docs, top_k)
-        return docs[:top_k]
+            docs = self.reranker.rerank(query, docs)
+        return diversify(docs, top_k)

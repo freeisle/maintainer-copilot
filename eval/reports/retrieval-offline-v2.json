@@ -1,0 +1,751 @@
+{
+  "mode": "offline lexical only; no dense/rewrite/reranker",
+  "samples": 24,
+  "snapshot_sha256": "d17e7ad54a4608e01e752b6d6cba97d1d445be6c6dc400062a6d2f7e1a65fafa",
+  "dataset_sha256": "db8404eafabb33495cc27a36f1531eba0a9037823b5e98ca4c65a90f9a33acea",
+  "variants": {
+    "legacy": {
+      "hit3": 0.5,
+      "recall5": 0.5407,
+      "mrr": 0.4379,
+      "results": [
+        {
+          "id": "ret-001",
+          "retrieved": [
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "ai-agent-py/README.md",
+            "services/ai-service/README.md",
+            "README.md",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/impl/TicketServiceImpl.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 0.3333333333333333,
+          "mrr": 0.5
+        },
+        {
+          "id": "ret-002",
+          "retrieved": [
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainFirstSleeperPurchaseTicketHandler.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainSecondSleeperPurchaseTicketHandler.java",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "README.md"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-003",
+          "retrieved": [
+            "framework/src/test/java/com/nageoffer/ai/ragent/framework/validation/ChatQuestionTest.java",
+            "README.md",
+            "issue#38",
+            "issue#58"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-004",
+          "retrieved": [
+            "issue#95",
+            "issue#45",
+            "docs/examples/pdf-ingestion-example.md",
+            "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngine.java",
+            "README.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.14285714285714285,
+          "mrr": 0.25
+        },
+        {
+          "id": "ret-005",
+          "retrieved": [
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/guidance/IntentGuidanceServiceTest.java",
+            "README.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/Intent/SimpleIntentClassifierTests.java",
+            "framework/src/test/java/com/nageoffer/ai/ragent/framework/validation/ChatQuestionTest.java",
+            "issue#124",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/intent/IntentTreeFactory.java",
+            "issue#83"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-006",
+          "retrieved": [
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/guidance/IntentGuidanceServiceTest.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/guidance/AmbiguityLLMCheckerTest.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-007",
+          "retrieved": [
+            "README.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/admin/service/impl/DashboardServiceImplTest.java",
+            "issue#5",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/KeywordSearchChannel.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/KeywordSearchChannelTest.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-008",
+          "retrieved": [
+            "issue#58",
+            "docs/releases/v1.1.0.md",
+            "issue#83",
+            "issue#38",
+            "docs/releases/v1.0.0.md"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-009",
+          "retrieved": [
+            "resources/initializer/enterprise-knowledge-base/prompts/mcp-parameter-extract.txt",
+            "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/EmbeddedChunk.java",
+            "frontend/src/pages/admin/settings/SystemSettingsPage.tsx",
+            "infra-ai/src/main/java/com/nageoffer/ai/ragent/infra/embedding/AbstractOpenAIStyleEmbeddingClient.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/PgVectorStoreAdmin.java",
+            "resources/regression/README.md"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-010",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/support/VectorTargetResolver.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/VectorTarget.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/service/impl/KnowledgeBaseServiceImpl.java",
+            "README.md",
+            "issue#21",
+            "issue#94"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-011",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngine.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngineTest.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/ingestion/service/impl/IngestionTaskServiceImplTest.java",
+            "docs/releases/v1.0.0.md",
+            "docs/examples/pdf-ingestion-example.md",
+            "README.md"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-012",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/MilvusVectorRetrieverService.java",
+            "mcp-server/src/main/java/com/nageoffer/ai/ragent/mcp/executor/CurrentTimeMcpExecutor.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/MilvusVectorStoreAdmin.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/MilvusVectorStoreService.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/intent/DefaultIntentClassifierTest.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/PgVectorRetrieverService.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-013",
+          "retrieved": [
+            "issue#38",
+            "README.md",
+            "issue#58",
+            "docs/releases/v1.1.0.md",
+            "docs/releases/v1.0.0.md",
+            "issue#41",
+            "issue#48"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-014",
+          "retrieved": [
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/select/TrainSeatTypeSelector.java",
+            "services/order-service/src/main/java/org/opengoofy/index12306/biz/orderservice/service/impl/OrderServiceImpl.java",
+            "frameworks/cache/src/main/java/org/opengoofy/index12306/framework/starter/cache/StringRedisTemplateProxy.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/filter/query/TrainTicketQueryParamNotNullChainFilter.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/filter/purchase/TrainPurchaseTicketParamNotNullChainHandler.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/filter/refund/TrainRefundTicketParamNotNullChainFilter.java",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainFirstSleeperPurchaseTicketHandler.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-015",
+          "retrieved": [
+            "ai-agent-py/README.md",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/filter/purchase/TrainPurchaseTicketRepeatChainHandler.java",
+            "ai-agent-py/tests/test_graph_hitl.py",
+            "ai-agent-py/app/graph.py",
+            "README.md",
+            "issue#17",
+            "ai-agent-py/app/tools/order_tools.py"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.14285714285714285
+        },
+        {
+          "id": "ret-016",
+          "retrieved": [
+            "frameworks/base/src/main/java/org/opengoofy/index12306/framework/starter/bases/ApplicationContextHolder.java",
+            "format/copyright.txt",
+            "ai-agent-py/app/graph.py",
+            "ai-agent-py/app/planning/waitlist_scorer.py",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/core/SemanticCache.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/toolkit/ChooseSeatUtil.java",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/core/KnowledgeChunk.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 1.0,
+          "mrr": 0.25
+        },
+        {
+          "id": "ret-017",
+          "retrieved": [
+            "ai-agent-py/app/tools/client.py",
+            "console-vue/src/service/axios.js",
+            "frameworks/distributedid/src/main/java/org/opengoofy/index12306/framework/starter/distributedid/core/snowflake/Snowflake.java",
+            "services/user-service/src/main/java/org/opengoofy/index12306/biz/userservice/service/impl/UserLoginServiceImpl.java",
+            "issue#9"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-018",
+          "retrieved": [
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "issue#7",
+            "issue#14",
+            "issue#6",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainSecondSleeperPurchaseTicketHandler.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainFirstSleeperPurchaseTicketHandler.java",
+            "issue#5",
+            "services/ai-service/README.md"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-019",
+          "retrieved": [
+            "src/maintainer_copilot/skills/__init__.py",
+            "src/maintainer_copilot/tools/github_client.py",
+            "src/maintainer_copilot/graph/reflector.py",
+            "src/maintainer_copilot/tools/github_tools.py",
+            "src/maintainer_copilot/skills/loader.py",
+            "src/maintainer_copilot/rag/retriever.py",
+            "src/maintainer_copilot/rag/indexer.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 0.5
+        },
+        {
+          "id": "ret-020",
+          "retrieved": [
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/graph/supervisor.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/ui/static/app.js",
+            "src/maintainer_copilot/rag/chunkers.py",
+            "src/maintainer_copilot/main.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-021",
+          "retrieved": [
+            "src/maintainer_copilot/memory/long_term.py",
+            "src/maintainer_copilot/metrics/__init__.py",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/metrics/adoption.py",
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/__init__.py",
+            "src/maintainer_copilot/rag/query_rewriter.py",
+            "src/maintainer_copilot/main.py"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.5,
+          "mrr": 0.2
+        },
+        {
+          "id": "ret-022",
+          "retrieved": [
+            "src/maintainer_copilot/tools/mcp_server.py",
+            "src/maintainer_copilot/tools/registry.py",
+            "src/maintainer_copilot/rag/query_rewriter.py",
+            "src/maintainer_copilot/rag/chunkers.py",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/metrics/adoption.py",
+            "src/maintainer_copilot/rag/dedup.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 0.3333333333333333
+        },
+        {
+          "id": "ret-023",
+          "retrieved": [
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/main.py",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/graph/state.py",
+            "src/maintainer_copilot/tools/github_tools.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 0.3333333333333333
+        },
+        {
+          "id": "ret-024",
+          "retrieved": [
+            "src/maintainer_copilot/server.py",
+            "src/maintainer_copilot/workers/triage.py",
+            "src/maintainer_copilot/main.py",
+            "src/maintainer_copilot/graph/supervisor.py",
+            "src/maintainer_copilot/rag/indexer.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        }
+      ]
+    },
+    "enhanced": {
+      "hit3": 0.625,
+      "recall5": 0.5903,
+      "mrr": 0.5486,
+      "results": [
+        {
+          "id": "ret-001",
+          "retrieved": [
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "ai-agent-py/README.md",
+            "services/ai-service/README.md",
+            "README.md",
+            "ai-agent-py/app/planning/waitlist_scorer.py",
+            "ai-agent-py/app/tools/waitlist_tools.py",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/impl/TicketServiceImpl.java",
+            "ai-agent-py/app/__init__.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 0.6666666666666666,
+          "mrr": 0.5
+        },
+        {
+          "id": "ret-002",
+          "retrieved": [
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainFirstSleeperPurchaseTicketHandler.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainSecondSleeperPurchaseTicketHandler.java",
+            "README.md",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "ai-agent-py/README.md",
+            "ai-agent-py/app/tools/waitlist_tools.py",
+            "ai-agent-py/app/planning/waitlist_scorer.py",
+            "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/core/IdempotentAspect.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-003",
+          "retrieved": [
+            "README.md",
+            "issue#38",
+            "issue#58",
+            "framework/src/test/java/com/nageoffer/ai/ragent/framework/validation/ChatQuestionTest.java",
+            "issue#83",
+            "issue#41",
+            "issue#48",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-004",
+          "retrieved": [
+            "issue#95",
+            "issue#45",
+            "docs/examples/pdf-ingestion-example.md",
+            "README.md",
+            "issue#94",
+            "resources/initializer/README.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java",
+            "resources/initializer/common/InitializationActions.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-005",
+          "retrieved": [
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/Intent/SimpleIntentClassifierTests.java",
+            "README.md",
+            "issue#124",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/guidance/IntentGuidanceServiceTest.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/intent/IntentTreeFactory.java",
+            "issue#83",
+            "issue#99"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-006",
+          "retrieved": [
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/guidance/IntentGuidanceServiceTest.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java",
+            "README.md",
+            "frontend/TESTING.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/guidance/AmbiguityLLMCheckerTest.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/intent/IntentTreeFactory.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/Intent/SimpleIntentClassifierTests.java",
+            "resources/initializer/common/InitializationActions.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-007",
+          "retrieved": [
+            "README.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/rewrite/QueryRewriteTests.java",
+            "resources/regression/README.md",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/KeywordSearchChannel.java",
+            "issue#5",
+            "rag/src/test/java/com/nageoffer/ai/ragent/admin/service/impl/DashboardServiceImplTest.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/KeywordSearchChannelTest.java",
+            "issue#41"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-008",
+          "retrieved": [
+            "issue#58",
+            "issue#83",
+            "docs/releases/v1.1.0.md",
+            "README.md",
+            "issue#38",
+            "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/Chunk.java",
+            "docs/releases/v1.0.0.md",
+            "resources/regression/agent-memory/AgentMemoryRegressionMain.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-009",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/support/VectorTargetResolver.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/VectorTarget.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/service/impl/KnowledgeChunkServiceImpl.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/embed/ChunkEmbeddingService.java",
+            "resources/initializer/enterprise-knowledge-base/prompts/mcp-parameter-extract.txt",
+            "infra-ai/src/main/java/com/nageoffer/ai/ragent/infra/embedding/AbstractOpenAIStyleEmbeddingClient.java",
+            "infra-ai/src/main/java/com/nageoffer/ai/ragent/infra/embedding/RoutingEmbeddingService.java",
+            "infra-ai/src/main/java/com/nageoffer/ai/ragent/infra/embedding/EmbeddingService.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-010",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/support/VectorTargetResolver.java",
+            "README.md",
+            "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/VectorTarget.java",
+            "docs/releases/v1.1.0.md",
+            "issue#107",
+            "issue#94",
+            "issue#21",
+            "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/service/impl/KnowledgeBaseServiceImpl.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-011",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngine.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngineTest.java",
+            "docs/examples/pdf-ingestion-example.md",
+            "README.md",
+            "docs/releases/v1.0.0.md",
+            "rag/src/test/java/com/nageoffer/ai/ragent/ingestion/service/impl/IngestionTaskServiceImplTest.java",
+            "frontend/src/pages/admin/ingestion/IngestionPage.tsx",
+            "issue#95"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-012",
+          "retrieved": [
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/MilvusVectorRetrieverService.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/RetrieveRequest.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/service/impl/IntentTreeServiceImpl.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/vector/MilvusVectorRetrieverServiceTest.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/intent/IntentNode.java",
+            "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/vector/PgVectorRetrieverService.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/VectorSearchChannelTest.java",
+            "rag/src/test/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/KeywordSearchChannelTest.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-013",
+          "retrieved": [
+            "issue#38",
+            "README.md",
+            "issue#58",
+            "docs/releases/v1.1.0.md",
+            "issue#48",
+            "issue#41",
+            "docs/releases/v1.0.0.md",
+            "resources/regression/README.md"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-014",
+          "retrieved": [
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/select/TrainSeatTypeSelector.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainFirstSleeperPurchaseTicketHandler.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainSecondSleeperPurchaseTicketHandler.java",
+            "frameworks/cache/src/main/java/org/opengoofy/index12306/framework/starter/cache/StringRedisTemplateProxy.java",
+            "services/order-service/src/main/java/org/opengoofy/index12306/biz/orderservice/service/impl/OrderServiceImpl.java",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/dto/req/PurchaseTicketReqDTO.java",
+            "frameworks/cache/src/main/java/org/opengoofy/index12306/framework/starter/cache/toolkit/CacheUtil.java",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.0
+        },
+        {
+          "id": "ret-015",
+          "retrieved": [
+            "ai-agent-py/README.md",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/filter/purchase/TrainPurchaseTicketRepeatChainHandler.java",
+            "ai-agent-py/app/tools/order_tools.py",
+            "ai-agent-py/app/graph.py",
+            "README.md",
+            "ai-agent-py/tests/test_graph_hitl.py",
+            "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/Idempotent.java",
+            "issue#17"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 0.3333333333333333
+        },
+        {
+          "id": "ret-016",
+          "retrieved": [
+            "frameworks/base/src/main/java/org/opengoofy/index12306/framework/starter/bases/ApplicationContextHolder.java",
+            "format/copyright.txt",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/config/RagConfiguration.java",
+            "ai-agent-py/tests/test_waitlist_scorer.py",
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/core/SemanticCache.java",
+            "ai-agent-py/app/planning/waitlist_scorer.py",
+            "issue#21",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/toolkit/ChooseSeatUtil.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.16666666666666666
+        },
+        {
+          "id": "ret-017",
+          "retrieved": [
+            "ai-agent-py/app/tools/client.py",
+            "console-vue/src/service/axios.js",
+            "services/user-service/src/main/java/org/opengoofy/index12306/biz/userservice/service/impl/UserLoginServiceImpl.java",
+            "services/user-service/src/main/java/org/opengoofy/index12306/biz/userservice/controller/UserLoginController.java",
+            "ai-agent-py/README.md",
+            "services/user-service/src/main/java/org/opengoofy/index12306/biz/userservice/service/UserLoginService.java",
+            "frameworks/distributedid/src/main/java/org/opengoofy/index12306/framework/starter/distributedid/core/snowflake/Snowflake.java",
+            "services/user-service/src/main/java/org/opengoofy/index12306/biz/userservice/dto/resp/UserLoginRespDTO.java"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-018",
+          "retrieved": [
+            "services/ai-service/src/main/java/org/opengoofy/index12306/biz/aiservice/controller/AiSupportController.java",
+            "issue#7",
+            "services/ai-service/README.md",
+            "issue#14",
+            "issue#6",
+            "ai-agent-py/app/tools/client.py",
+            "issue#5",
+            "services/ticket-service/src/main/java/org/opengoofy/index12306/biz/ticketservice/service/handler/ticket/TrainSecondSleeperPurchaseTicketHandler.java"
+          ],
+          "hit3": 0.0,
+          "recall5": 0.0,
+          "mrr": 0.16666666666666666
+        },
+        {
+          "id": "ret-019",
+          "retrieved": [
+            "src/maintainer_copilot/tools/github_client.py",
+            "src/maintainer_copilot/main.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/tools/github_tools.py",
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/skills/__init__.py",
+            "src/maintainer_copilot/server.py",
+            "src/maintainer_copilot/graph/reflector.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-020",
+          "retrieved": [
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/server.py",
+            "src/maintainer_copilot/graph/supervisor.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/ui/static/app.js",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/rag/chunkers.py",
+            "src/maintainer_copilot/main.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-021",
+          "retrieved": [
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/memory/long_term.py",
+            "src/maintainer_copilot/main.py",
+            "src/maintainer_copilot/tools/github_tools.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/server.py",
+            "src/maintainer_copilot/tools/github_client.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 0.5,
+          "mrr": 1.0
+        },
+        {
+          "id": "ret-022",
+          "retrieved": [
+            "src/maintainer_copilot/rag/retriever.py",
+            "src/maintainer_copilot/rag/query_rewriter.py",
+            "src/maintainer_copilot/tools/mcp_server.py",
+            "src/maintainer_copilot/tools/registry.py",
+            "src/maintainer_copilot/rag/embedder.py",
+            "src/maintainer_copilot/memory/long_term.py",
+            "src/maintainer_copilot/models/llm.py",
+            "src/maintainer_copilot/tools/github_client.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 0.5
+        },
+        {
+          "id": "ret-023",
+          "retrieved": [
+            "src/maintainer_copilot/graph/executor.py",
+            "src/maintainer_copilot/workers/solver.py",
+            "src/maintainer_copilot/main.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/graph/state.py",
+            "src/maintainer_copilot/tools/github_tools.py",
+            "src/maintainer_copilot/memory/long_term.py",
+            "src/maintainer_copilot/memory/short_term.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 0.5
+        },
+        {
+          "id": "ret-024",
+          "retrieved": [
+            "src/maintainer_copilot/server.py",
+            "src/maintainer_copilot/workers/triage.py",
+            "src/maintainer_copilot/main.py",
+            "src/maintainer_copilot/tools/github_tools.py",
+            "src/maintainer_copilot/workers/reviewer.py",
+            "src/maintainer_copilot/rag/indexer.py",
+            "src/maintainer_copilot/tools/github_client.py",
+            "src/maintainer_copilot/graph/supervisor.py"
+          ],
+          "hit3": 1.0,
+          "recall5": 1.0,
+          "mrr": 1.0
+        }
+      ]
+    }
+  },
+  "source_revisions": {
+    "freeisle/ragent": "1fdd99f6a6080b49e244133c998eb95159aa1749",
+    "freeisle/12306": "5e00578a55e21eec3f33afb47ffaa69e1fa9a9e7",
+    "local/maintainer-copilot": "384a302435bd88d6d9abe0d9476aac98f6448c5c"
+  },
+  "chunks": 6349,
+  "missing_labels": {}
+}
