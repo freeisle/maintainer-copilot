@@ -14,7 +14,7 @@ import threading
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -263,7 +263,7 @@ class TriageRequest(BaseModel):
 
 
 class ApproveRequest(BaseModel):
-    decision: str  # approved | edited | rejected
+    decision: Literal["approved", "edited", "rejected"]
     edited_draft: str | None = None
 
 
@@ -297,6 +297,10 @@ async def approve(item_id: str, req: ApproveRequest) -> dict:
     item = _store().get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="待审项不存在")
+    if item["status"] != "pending":
+        raise HTTPException(status_code=409, detail="待审项已处理")
+    if req.decision == "edited" and not (req.edited_draft or "").strip():
+        raise HTTPException(status_code=422, detail="编辑后草稿不能为空")
     decision = {"decision": req.decision, "edited_draft": req.edited_draft}
     config = {"configurable": {"thread_id": item["thread_id"]}}
     final_action: dict = {}

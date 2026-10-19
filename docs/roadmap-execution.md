@@ -52,3 +52,11 @@ RRF 单通道内重复 ID 不再重复加分；重排后优先覆盖不同文档
 `python -m eval.offline_retrieval --build` → n=24、同一源码快照旧/新词法对照：Hit@3 **0.5000→0.6250**，Recall@5 **0.5407→0.5903**，MRR@8 **0.4379→0.5486**。
 逐项排名、快照和标签 SHA256 见 `eval/reports/retrieval-offline-v2.json`。后续复跑去掉 `--build` 固定同一语料；快照存于忽略的 data 目录。
 这不是历史混合检索 baseline 的提升：未运行 embedding、query rewrite、reranker；困难语义召回仍有失败，不能用词法收益代替完整线上验证。因此任务保留未完成。
+
+阶段 3 提交：`1741a27`。
+
+## 阶段 4：持久化 checkpoint
+
+修复原来把 context manager 当 saver、且同步 saver 不支持 astream 的问题。新增 PersistentSaver 复用上游存储并桥接异步调用，适配现有两个事件循环。依赖及 lock 已更新；保留原依赖镜像地址，避免无关锁文件重写。
+审批 API 校验 decision、拒绝空编辑及已处理项重复请求。
+验证：`pytest -q tests/test_checkpoint_persistence.py tests/test_graph.py tests/test_webhook.py` → **9 passed**。三个独立进程重启场景分别验证 approved/edited/rejected。详见 `docs/persistence.md`。

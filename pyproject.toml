@@ -17,6 +17,7 @@ dependencies = [
     "fastmcp>=2.0",
     "psycopg[binary]>=3.2",
     "pgvector>=0.3",
+    "langgraph-checkpoint-sqlite>=3,<4",
 ]
 
 # RAG 重依赖(embedding/rerank/tree-sitter): 与核心依赖分层, 避免首日下载数 GB 模型栈

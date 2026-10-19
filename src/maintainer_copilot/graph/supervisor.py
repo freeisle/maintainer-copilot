@@ -3,7 +3,7 @@
 结构: Route -> (Triage|Solve|Review) -> Reflector -> [HumanGate] -> Executor
 - HumanGate 使用 LangGraph interrupt 原生实现 HITL（挂起等待维护者决策）
 - Reflector 失败且重写次数用尽 -> 降级为仅提示（不打标签不回复），不进入闸门
-- checkpoint: 默认 SQLite（文件式, 可演示恢复执行）, 失败回退内存
+- checkpoint: 默认持久化 SQLite, 初始化失败显式报错
 """
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
@@ -18,6 +18,7 @@ from .executor import executor_node
 from .reflector import MAX_REWRITES, reflector_node
 from .route import route_node
 from .state import AgentState
+from .checkpoint import PersistentSaver
 
 
 def route_after_start(state: AgentState) -> str:
@@ -63,16 +64,9 @@ def _degrade_node(state: AgentState) -> dict:
 
 
 def build_graph(checkpointer: BaseCheckpointSaver | None = None):
-    """组装并编译状态机。checkpointer=None 时默认 SQLite 文件, 失败回退内存。"""
+    """组装状态机。默认持久化；测试可显式传入 InMemorySaver。"""
     if checkpointer is None:
-        try:
-            from langgraph.checkpoint.sqlite import SqliteSaver
-
-            db_dir = get_settings().checkpoint_dir
-            db_dir.mkdir(parents=True, exist_ok=True)
-            checkpointer = SqliteSaver.from_conn_string(str(db_dir / "checkpoints.sqlite"))
-        except Exception:  # noqa: BLE001 - 任何持久化问题都不应阻断启动
-            checkpointer = InMemorySaver()
+        checkpointer = PersistentSaver(get_settings().checkpoint_dir / "checkpoints.sqlite")
 
     graph = StateGraph(AgentState)
     graph.add_node("route", route_node)
