@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     a2a_token: str = ""
     a2a_allowed_repos: list[str] = Field(default_factory=list)
 
+    observability_enabled: bool = False
+    trace_path: Path = PROJECT_ROOT / "data" / "traces.jsonl"
+    langfuse_url: str = ""
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+
     # 本地路径
     data_dir: Path = PROJECT_ROOT / "data"
     skill_dir: Path = PROJECT_ROOT / "skills"

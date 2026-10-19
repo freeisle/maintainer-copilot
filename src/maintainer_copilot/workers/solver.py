@@ -10,6 +10,7 @@ import logging
 import re
 from typing import Any, Callable
 
+from ..observability import traced
 from ..graph.state import AgentState, message_text
 from ..memory.long_term import get_preference
 from ..models.llm import ModelProvider
@@ -88,6 +89,7 @@ class SolverWorker:
         self.prefs_getter = prefs_getter or get_preference
         self.skill_getter = skill_getter or skill_context
 
+    @traced("solver.solve", "agent")
     async def solve(self, question: str, repo: str, advice: str = "", history: list[dict] | None = None) -> dict:
         # 1. 查询改写: 原问题 + LLM 改写(术语补全/中英变体), 最多 3 条
         queries = [question] + await self.rewriter.rewrite(question)

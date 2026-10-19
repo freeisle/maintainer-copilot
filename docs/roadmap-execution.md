@@ -108,3 +108,11 @@ GitHub 工具外层 retries=0，5xx/网络最多仍为客户端的 4 次；401/�
 ## 阶段 10：Java MCP 互操作
 
 Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现有 FastMCP 客户端调用。首次真实测试定位到协议握手/环境代理兼容问题，修复后运行 `pytest tests/test_java_mcp.py -q` → **1 passed**（独立 Java 进程、真实 HTTP）；`mvn -B -f services/java-tools/pom.xml test package` → **BUILD SUCCESS, 3 tests passed**。CI 加入 Java 构建，部署/使用见 services.md。
+
+
+阶段 10 提交：`02df70d`。
+
+## 阶段 11：观测与部署准备
+
+默认 opt-in、无内容的 Solver/LLM 父子 OTLP trace，评测入口关联数值 score，本地审计落盘，网络失败/partial rejection 脱敏日志、不重试。生成官方 v4.63.0 校验过的独立 Compose 与随机凭据（仅 ignored data），不覆盖或触碰原 RAG 库。实际执行 prepare 成功。
+`pytest tests/test_observability.py tests/test_llm.py tests/test_solver.py -q` → **14 passed**，真实本地 HTTP 接收 + 本地文件验证。无 Docker，无法验证真实 Langfuse UI/存储和基础设施镜像 digest，因此不勾选完成。

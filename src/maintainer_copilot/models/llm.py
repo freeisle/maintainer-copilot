@@ -11,6 +11,7 @@ from typing import Any
 from openai import AsyncOpenAI
 
 from ..config import Settings, get_settings
+from ..observability import traced
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class ModelProvider:
             base_url=self.settings.ollama_base_url,
         )
 
+    @traced("llm.chat", "generation")
     async def chat(
         self,
         messages: list[dict],

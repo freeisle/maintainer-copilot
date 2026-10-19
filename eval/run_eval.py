@@ -416,6 +416,9 @@ def main() -> None:
         for error in report["errors"]:
             print(f"  x {error['query'][:30]} expected={error['expected']} pred={error['pred']}")
 
+    from maintainer_copilot.observability import publish_evaluation
+    asyncio.run(publish_evaluation(args.suite, report))
+
 
 if __name__ == "__main__":
     main()
