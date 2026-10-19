@@ -134,3 +134,38 @@ Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现
 修复实际调用链中的边界：Solver 保留联邦排名，极小语料 BM25 非正 IDF 不丢弃真实匹配；禁用 Skill 同时禁用 overlay，候选回归按真实替换而非追加旧版本；新轮清除旧写目标；同一待审项并发审批返回 409，避免同进程重复执行。MCP 返回 error_kind；LLM 仅连接/超时/429/5xx 降级，鉴权/参数错误立即暴露，SDK 不隐式重试；无主 key 直接使用本地通道。
 全量 `pytest -q --basetemp=data/test-tmp-full-roadmap` → **151 passed, 1 dependency deprecation warning**；最后补充缺配置、小语料及参数校验后的专项分别 **38 passed** 和 **9 passed**。`compileall -q src scripts eval tests` 通过。
 `python -m eval.offline_retrieval --report data/retrieval-final.json` 再次复评同一 6349-chunk 快照，完整 JSON 与已提交报告相等，全部标签覆盖；不是重建语料后的不可比数字。
+
+
+收尾修复提交：`5ec0870`。
+
+## 交付状态与解除阻塞条件
+
+| 任务 | 状态 | 功能阶段 commit | 验证 / 剩余条件 |
+|---|---|---|---|
+| 减少重复入库 | 部分完成，阻塞 | 656ff5f | 路径/别名测试通过；原 PostgreSQL 恢复后验证备份、迁移和回滚 |
+| 检索评测扩充 | 完成 | 384a302 | 24 条 / 3 仓库；原 8 条不变，新增证据逐项核验 |
+| 召回覆盖优化 | 部分完成，阻塞 | 1741a27 | 离线对照可复现；需原混合检索实库回归 |
+| 持久化 checkpoint | 完成（单机边界） | 6457dce | 真实 LangGraph 跨进程批准/编辑/驳回恢复 |
+| 短期记忆 | 完成 | a7f5be2 | 多轮、预算、摘要、锚点、线程隔离与旧写目标清理 |
+| 限流降级 | 完成 | d07fb0e | 限流专属快照降级、无证据拒答、分类错误与重试边界 |
+| Skill 自迭代 | 部分完成，阻塞 | ecfa09f | 工程闭环通过；需真实完整反馈候选和语义回归审核 |
+| 联邦检索 | 完成 | c19dddb | 真实双仓库快照 + 隔离/部分失败/全部失败 |
+| A2A | 完成（同步只读子集） | cb52aac | 独立服务进程真实 TCP 发现/调用，协议/超时/认证错误 |
+| Java MCP | 完成 | 02df70d | Spring Boot 构建与 3 Java 测试；Python→Java 真实 MCP 测试 |
+| Langfuse | 部分完成，阻塞 | 58d574c | 实际本地 HTTP OTLP/scores 验证；需 Docker、完整 Langfuse UI/存储验证 |
+| 后训练 | 部分完成，阻塞 | a2b5473 | 实际合成 tiny 模型训练链路通过；真实可训练样本为 0 |
+
+7 项完成、5 项保留 `[ ]`。未完成项均已实现可在当前环境验证的部分，没有无人处理的独立规划项。测试中的外部 LLM/Worker 替身只用于流程隔离；不作为真实答案质量提升证据。
+
+没有执行历史索引清理、生产发布、远程 push 或业务模型替换；原工作区干净，无用户未提交改动需要避让。运行数据、快照、随机部署凭据、测试模型、Maven 缓存和 jar 保留在 Git 忽略目录，不进入提交。
+
+后续依赖恢复后的顺序：先备份并验证历史索引迁移/回滚，再运行原混合检索 baseline/v2；收集完整人工反馈后做候选语义回归和训练数据审查；Docker 可用后启动独立 Langfuse 并验证真实面板。GitHub 写操作与 checkpoint 间的崩溃窗口仍不保证 exactly-once（见 persistence.md），无需为本轮只读/演练验证打开真实写权限。
+
+
+## 补充：独立 PostgreSQL 事务验证
+
+收尾环境复核发现 PATH 中有 PostgreSQL 16 原生工具。新建 `data/pg-migration-verification`，仅监听 127.0.0.1:15439，在测试创建的随机 schema 中执行迁移脚本，未连接或修改原配置数据库。测试结束停止该专用实例，保留 ignored 数据目录。
+`MC_TEST_DATABASE_URL=postgresql://roadmap_test@127.0.0.1:15439/postgres` 下运行 `pytest tests/test_dedup_postgres.py -q --basetemp=data/test-tmp-postgres-migration` → **3 passed**。覆盖预览、完整行元数据/数值数组备份恢复、跨仓库隔离、恢复幂等、不覆盖更新、删除抛错回滚（连备份表创建也回滚）。
+本机未安装 pgvector，测试 embedding 为 double precision[]；因此不冒充 vector(1024) 实际索引迁移验证。原历史清理仍未执行、roadmap 保留 `[ ]`。
+
+最终完整回归 `pytest -q --basetemp=data/test-tmp-final-acceptance` → **154 passed, 1 warning**（anyio/Starlette 依赖弃用，无失败/跳过）；其后新增的 3 项 PostgreSQL 测试已单独实际执行通过。默认不提供 MC_TEST_DATABASE_URL 时这 3 项明确 skip，不连接生产数据库。
