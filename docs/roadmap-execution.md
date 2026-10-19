@@ -30,3 +30,13 @@
 
 验证：`.venv/Scripts/python.exe -m pytest -q --basetemp=data/test-tmp-verified` → **111 passed**（包含 109 项既有测试）。
 Windows 沙箱在仓库内创建的 pytest 私有目录同样遇到 ACL 错误；正常权限执行通过。PostgreSQL 在沙箱外重试仍超时，因此迁移实库验收未完成。
+
+阶段 1 提交：`656ff5f`。
+
+## 阶段 2：独立 v2 评测集
+
+`retrieval-v2.jsonl` 共 24 条，前 8 条与原集完全相同，新增 16 条覆盖符号、错误串、英文、配置、多来源及困难负例语境，增加当前项目作为第三个仓库。
+所有新增标注逐文件核验 `evidence` 字符串；来源为当前源码，不从排序结果倒推标签。`python -m eval.expand_retrieval` 可重建扩展集。
+`python -m eval.run_eval --suite retrieval --dataset retrieval-v2` 接入原评测入口；默认仍使用旧集。
+验证：`pytest -q tests/test_retrieval_dataset.py` → **1 passed**；16 个新增案例的所有标注源码验证通过。
+新仓库需要先按 `local/maintainer-copilot` 键入库，线上混合指标仍受 PostgreSQL 不可达阻塞。

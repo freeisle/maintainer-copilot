@@ -247,6 +247,7 @@ async def run_retrieval_suite(
     rewrite: bool = True,
     rerank: bool = True,
     check: bool = False,
+    dataset: str = "retrieval",
 ) -> dict:
     """检索评测: 问题 -> 标注文档键的 hit@1/3/k + MRR + Recall + 分通道诊断。
 
@@ -260,7 +261,7 @@ async def run_retrieval_suite(
     from maintainer_copilot.rag.retriever import HybridRetriever
     from maintainer_copilot.workers.solver import merge_results
 
-    data = load_dataset("retrieval")
+    data = load_dataset(dataset)
     if limit:
         data = data[:limit]
     retriever = HybridRetriever(reranker=Reranker())
@@ -374,6 +375,7 @@ def main() -> None:
     parser.add_argument("--no-rewrite", action="store_true", help="retrieval: 关闭 LLM 查询改写")
     parser.add_argument("--no-rerank", action="store_true", help="retrieval: 关闭 rerank(融合排序消融)")
     parser.add_argument("--check", action="store_true", help="retrieval: 仅校验标注是否存在于知识库")
+    parser.add_argument("--dataset", choices=["retrieval", "retrieval-v2"], default="retrieval")
     args = parser.parse_args()
     if args.suite == "triage":
         if not args.repo:
@@ -396,6 +398,7 @@ def main() -> None:
                 rewrite=not args.no_rewrite,
                 rerank=not args.no_rerank,
                 check=args.check,
+                dataset=args.dataset,
             )
         )
         if args.check:
