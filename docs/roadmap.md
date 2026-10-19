@@ -20,4 +20,4 @@
 - [ ] 后训练：积累标注样本后做格式对齐与小模型专精（提效替代大模型）
 - [ ] Langfuse 自托管：trace 可视化与评测面板
 - [x] 多仓库联邦检索与跨仓库知识复用：显式配置关联范围，限定并发/超时，repo 级引用与 ID 隔离，接入 Solver；真实快照双仓库调用及错误路径通过。
-- [ ] Java 工具服务模块：验证 MCP 语言无关性（Spring Boot 写一个工具服务接入）
+- [x] Java 工具服务模块：Spring Boot 3.5.7 / Spring AI 1.1 的只读 POM 检查服务；Python MCP 客户端真实 TCP 调用、XML 安全拒绝和连接失败验证通过，Java 3 项 + Python 1 项测试。

@@ -23,3 +23,19 @@ python -m uvicorn maintainer_copilot.services.a2a:create_app --factory --host 12
 服务发现 `/.well-known/agent-card.json`，JSON-RPC endpoint `/a2a`；实现 `message/send`、`tasks/get`、`tasks/cancel`，固定协议 [A2A 0.3 specification](https://a2a-protocol.org/v0.3.0/specification/)。DataPart 使用 `repo/query/top_k`，结果为 completed Task 的 evidence artifact。
 只读同步短任务，最多保留 128 个任务供查询，重启后不承诺任务历史；完成任务取消返回规范错误，未知任务、无效参数、未知方法、检索超时均有明确错误。未宣称流式、推送或完整协议一致性认证。
 客户端不自动重试，校验发现 endpoint 与配置同源后才发送凭据；服务限定仓库、4 并发和总等待超时。真实独立进程互操作由 `tests/test_a2a.py` 验证。
+
+
+## Java MCP 工具服务
+
+场景：PR 审阅时检查 Maven 声明，不启动 Maven、不下载依赖、不读取服务端文件。传入 POM 文本，返回直接坐标、java.version 和依赖声明（不解析 parent/BOM/property，因此 resolved=false）。
+
+```powershell
+mvn -B -f services/java-tools/pom.xml test package
+java -jar services/java-tools/target/java-tools-0.1.0.jar
+uv run python scripts/inspect_pom.py services/java-tools/pom.xml
+uv run pytest tests/test_java_mcp.py -q
+```
+
+服务固定只监听 127.0.0.1:8020，Streamable HTTP `/mcp`；Python 支持 `--url`，总超时 10 秒，不重试。使用现有 FastMCP 客户端，显式兼容 initialize 握手，关闭环境代理避免本机调用被代理截获。返回兼容结构化结果与 TextContent JSON。XXE/DOCTYPE 禁用、文本长度限制 200000；不适合作为无认证公网服务。
+
+Java 构建产物不入 Git。CI 先构建 Java 再跑 Python 测试，缺 jar 的独立 Python 环境会明确 skip 跨语言项。本轮实测没有跳过。

@@ -16,5 +16,12 @@ jobs:
           python-version: "3.13"
       - name: Install dependencies
         run: uv sync --extra rag
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Build and test Java MCP service
+        run: mvn -B -f services/java-tools/pom.xml test package
       - name: Run tests
         run: uv run pytest -q

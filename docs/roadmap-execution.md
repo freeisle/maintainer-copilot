@@ -101,3 +101,10 @@ GitHub 工具外层 retries=0，5xx/网络最多仍为客户端的 4 次；401/�
 
 具体场景为多个维护工作流复用一个只读知识进程；Supervisor/HITL/Executor 仍在原进程。服务协议固定 A2A 0.3，客户端通过配置接入 Solver。
 `pytest -q tests/test_a2a.py tests/test_federated.py` → **4 passed**，包含 uvicorn 独立进程、实际 TCP HTTP 发现/请求响应；补充超时及 completed task get/cancel 契约测试。未开启公网服务，无自动写动作。
+
+
+阶段 9 提交：`cb52aac`。
+
+## 阶段 10：Java MCP 互操作
+
+Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现有 FastMCP 客户端调用。首次真实测试定位到协议握手/环境代理兼容问题，修复后运行 `pytest tests/test_java_mcp.py -q` → **1 passed**（独立 Java 进程、真实 HTTP）；`mvn -B -f services/java-tools/pom.xml test package` → **BUILD SUCCESS, 3 tests passed**。CI 加入 Java 构建，部署/使用见 services.md。
