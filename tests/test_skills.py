@@ -49,6 +49,13 @@ def test_disabled_skill_yields_empty_context(tmp_skills: Path) -> None:
     assert loader.skill_context("freeisle/12306") == ""
 
 
+def test_disabled_skill_also_disables_approved_overlay(tmp_skills, monkeypatch):
+    from maintainer_copilot.skills.evolution import EvolutionStore
+    _write_skill(tmp_skills,'a/b',enabled=False)
+    monkeypatch.setattr(EvolutionStore,'active',lambda self,repo: {'version':1,'content':'approved overlay'})
+    assert loader.skill_context('a/b')==''
+
+
 def test_broken_yaml_returns_none(tmp_skills: Path) -> None:
     p = tmp_skills / loader._slug("freeisle/12306")
     p.mkdir(parents=True)

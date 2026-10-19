@@ -125,3 +125,12 @@ Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现
 只读审查发现旧 adoption 仅 2 条统计，没有完整反馈表；真实导出 train/validation/test 均为 0，ready=false，未改变业务模型。实现 approved/edited 目标采集、拒绝稿排除、凭据/长度/引用校验、问题分组隔离、数据 hash；训练本地 causal LM（prompt mask、梯度裁剪、seed）、独立模型落盘、相同 test 的训练前后 NLL/格式/token-F1/耗时对照。
 首轮合成训练测试因验证集只有 2 条被门槛正确拦截；增加合成测试源组后，实际 tiny GPT-2 CPU 训练/保存/重载与权重变化验证通过，未降低真实数据门槛。
 `pytest tests/test_training.py tests/test_llm.py tests/test_solver.py tests/test_skills.py tests/test_observability.py tests/test_mcp.py -q` → **32 passed**（其中训练 3 项）。这不是业务模型质量或收益结论。详见 posttraining.md 与 eval/reports/training-readiness.json。
+
+
+阶段 12 提交：`a2b5473`；训练专项最终 **3 passed**。
+
+## 收尾复查与全量回归
+
+修复实际调用链中的边界：Solver 保留联邦排名，极小语料 BM25 非正 IDF 不丢弃真实匹配；禁用 Skill 同时禁用 overlay，候选回归按真实替换而非追加旧版本；新轮清除旧写目标；同一待审项并发审批返回 409，避免同进程重复执行。MCP 返回 error_kind；LLM 仅连接/超时/429/5xx 降级，鉴权/参数错误立即暴露，SDK 不隐式重试；无主 key 直接使用本地通道。
+全量 `pytest -q --basetemp=data/test-tmp-full-roadmap` → **151 passed, 1 dependency deprecation warning**；最后补充缺配置、小语料及参数校验后的专项分别 **38 passed** 和 **9 passed**。`compileall -q src scripts eval tests` 通过。
+`python -m eval.offline_retrieval --report data/retrieval-final.json` 再次复评同一 6349-chunk 快照，完整 JSON 与已提交报告相等，全部标签覆盖；不是重建语料后的不可比数字。

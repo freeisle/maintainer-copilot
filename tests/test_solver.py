@@ -126,3 +126,9 @@ async def test_solve_injects_skill_context() -> None:
     answer_prompt = llm.calls[-1][0]["content"]
     assert "仓库专属 Skill: 术语表" in answer_prompt
     assert "候补=waitlist" in answer_prompt
+
+def test_merge_preserves_federation_ranking_over_local_scores():
+    from maintainer_copilot.workers.solver import merge_results
+    docs=[{'id':'a::1','federation_score':.02,'rerank_score':.1},
+          {'id':'b::1','federation_score':.01,'rerank_score':.9}]
+    assert merge_results([docs])[0]['id']=='a::1'

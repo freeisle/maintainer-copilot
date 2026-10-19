@@ -30,3 +30,9 @@ async def test_snapshot_isolation_refresh_and_invalid(tmp_path):
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(ValueError):
         await retriever.retrieve("needle", "a/b")
+
+def test_tiny_corpus_common_terms_remain_retrievable():
+    from maintainer_copilot.rag.lexical import LexicalIndex
+    index=LexicalIndex([{'id':'1','repo':'a/b','source':'doc','path':'a.md','text':'needle'}])
+    assert index.search('needle',3)[0]['id']=='1'
+    assert index.search('absent',3)==[]

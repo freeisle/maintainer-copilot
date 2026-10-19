@@ -24,4 +24,4 @@ def memory_node(state):
     return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES), *messages],
             "turn_id": uuid.uuid4().hex,
             "memory_repo": repo, "approval": "pending", "final_draft": "",
-            "final_action": {}, "rewrite_count": 0, "reflect_advice": "", "reflection": {}}
+            "final_action": {}, "draft_meta": {}, "citations": [], "draft": "", "rewrite_count": 0, "reflect_advice": "", "reflection": {}}

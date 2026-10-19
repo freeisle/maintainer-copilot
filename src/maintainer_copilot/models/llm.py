@@ -8,7 +8,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, APIConnectionError, APITimeoutError, APIStatusError
 
 from ..config import Settings, get_settings
 from ..observability import traced
@@ -22,6 +22,7 @@ class ChatResult:
     tool_calls: list[dict] = field(default_factory=list)
     model: str = ""
     used_fallback: bool = False
+    fallback_reason: str = ""
 
 
 class ModelProvider:
@@ -33,12 +34,14 @@ class ModelProvider:
                 "主通道将不可用，自动走 Ollama 兜底"
             )
         self.primary = AsyncOpenAI(
-            api_key=self.settings.deepseek_api_key,
+            api_key=self.settings.deepseek_api_key or "not-configured",
             base_url=self.settings.deepseek_base_url,
+            max_retries=0,
         )
         self.fallback = AsyncOpenAI(
             api_key="ollama",
             base_url=self.settings.ollama_base_url,
+            max_retries=0,
         )
 
     @traced("llm.chat", "generation")
@@ -51,7 +54,8 @@ class ModelProvider:
         max_tokens: int = 4096,
         timeout: float = 60.0,
     ) -> ChatResult:
-        for attempt in (1, 2):
+        fallback_reason = "" if self.settings.deepseek_api_key else "unconfigured"
+        for attempt in ((1, 2) if self.settings.deepseek_api_key else (2,)):
             client, model = self.primary, self.settings.primary_model
             used_fallback = False
             if attempt == 2:
@@ -72,9 +76,18 @@ class ModelProvider:
                     tool_calls=[tc.model_dump() for tc in (choice.tool_calls or [])],
                     model=resp.model,
                     used_fallback=used_fallback,
+                    fallback_reason=fallback_reason,
                 )
-            except Exception as exc:  # noqa: BLE001 - 任意网络/协议错误统一走兜底
-                logger.warning("LLM 调用失败(attempt=%d, model=%s): %s", attempt, model, exc)
+            except (APIConnectionError, APITimeoutError, APIStatusError, ConnectionError, TimeoutError) as exc:
+                if isinstance(exc, APIStatusError):
+                    status = exc.status_code
+                    if status != 429 and status < 500:
+                        logger.warning("llm_failure kind=auth_or_request status=%d", status)
+                        raise  # Authentication/request errors must be corrected, not hidden.
+                    fallback_reason = "rate_limit" if status == 429 else "service"
+                else:
+                    fallback_reason = "timeout" if isinstance(exc, (APITimeoutError, TimeoutError)) else "connection"
+                logger.warning("llm_failure attempt=%d model=%s kind=%s", attempt, model, fallback_reason)
                 if attempt == 2:
                     raise RuntimeError("主备两个 LLM 通道均不可用") from exc
         raise AssertionError("unreachable")

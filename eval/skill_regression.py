@@ -25,8 +25,11 @@ async def compare(cid, worker_factory=SolverWorker):
     if not cases:
         raise ValueError("No QA regression cases for this repository")
     before = skill_context(candidate["repo"])
+    if store.active(candidate["repo"])["version"] != candidate["base_version"]:
+        raise ValueError("Stale candidate; compare against its actual base version")
+    after = skill_context(candidate["repo"], overlay={"version":candidate["base_version"]+1,"content":candidate["content"]})
     results = []
-    for mode, context in [("baseline", before), ("candidate", before + "\n" + candidate["content"])]:
+    for mode, context in [("baseline", before), ("candidate", after)]:
         worker = worker_factory(skill_getter=lambda repo, text=context: text)
         for case in cases:
             result = await worker.solve(case["question"], case["repo"])

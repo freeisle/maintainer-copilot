@@ -33,11 +33,20 @@ class LexicalIndex:
         self.rows = deduplicate_docs(rows) if enhanced else rows
         self.enhanced = enhanced
         texts = [(r.get("path", "") + " " if enhanced else "") + r["text"] for r in self.rows]
-        self.index = BM25Okapi([tokenize(t, enhanced) or ["__empty__"] for t in texts]) if texts else None
+        tokens = [tokenize(t, enhanced) or ["__empty__"] for t in texts]
+        self.terms = [set(t) for t in tokens]
+        self.index = BM25Okapi(tokens) if texts else None
 
     def search(self, query: str, top_k: int) -> list[dict]:
         if self.index is None:
             return []
-        scores = self.index.get_scores(tokenize(query, self.enhanced))
+        query_tokens = tokenize(query, self.enhanced)
+        scores = self.index.get_scores(query_tokens)
+        if self.enhanced:
+            # BM25 IDF can be zero/negative in tiny corpora or ubiquitous queries.
+            # Retain actual token matches without admitting unrelated documents.
+            query_terms = set(query_tokens)
+            scores = [float(s) if s > 0 else 1e-6 * len(terms & query_terms)
+                      for s,terms in zip(scores,self.terms)]
         ranked = sorted(zip(self.rows, scores), key=lambda x: x[1], reverse=True)
         return [{**r, "rerank_score": float(s)} for r, s in ranked if s > 0][:top_k]

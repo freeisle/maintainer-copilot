@@ -29,7 +29,7 @@ async def test_protocol_errors_and_auth(tmp_path):
     with pytest.raises(httpx.HTTPStatusError):
         await retriever.retrieve("needle","private/repo")
     async with httpx.AsyncClient(transport=transport,base_url="http://local",headers={"Authorization":"Bearer test"}) as c:
-        for method,params,code in [("tasks/get",{"id":"missing"},-32001),("unknown",{},-32601),("message/send",{},-32602)]:
+        for method,params,code in [("tasks/get",{"id":"missing"},-32001),("tasks/get",{"id":[]},-32602),("unknown",{},-32601),("message/send",{},-32602)]:
             r=await c.post("/a2a",json={"jsonrpc":"2.0","id":1,"method":method,"params":params})
             assert r.json()["error"]["code"] == code
 

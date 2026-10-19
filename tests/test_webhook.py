@@ -92,3 +92,26 @@ def test_unrelated_event_ignored(client: TestClient) -> None:
         },
     )
     assert r.json().get("ignored") == "issue_comment"
+
+@pytest.mark.asyncio
+async def test_parallel_approval_is_not_executed_twice(tmp_path, monkeypatch):
+    import asyncio
+    import httpx
+    store=server.PendingStore(tmp_path/'pending.sqlite')
+    store.add({'id':'one','thread_id':'thread','status':'pending'})
+    monkeypatch.setattr(server,'_store',lambda:store)
+    started,release=asyncio.Event(),asyncio.Event()
+    class Graph:
+        calls=0
+        async def astream(self,*args,**kwargs):
+            self.calls+=1; started.set(); await release.wait()
+            yield {'executor':{'final_action':{'executed':True,'dry_run':True}}}
+    graph=Graph(); monkeypatch.setattr(server,'_get_graph',lambda:graph)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(server.app),base_url='http://test') as c:
+        first=asyncio.create_task(c.post('/api/approve/one',json={'decision':'approved'}))
+        await started.wait()
+        assert (await c.post('/api/approve/one',json={'decision':'approved'})).status_code==409
+        release.set()
+        assert (await first).status_code==200
+        assert (await c.post('/api/approve/one',json={'decision':'approved'})).status_code==409
+    assert graph.calls==1

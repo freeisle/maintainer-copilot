@@ -292,8 +292,25 @@ async def create_triage(req: TriageRequest) -> dict:
     return {"ok": True, "id": item_id, "gate": True, "payload": item}
 
 
+_approval_lock = threading.Lock()
+_approval_inflight: set[str] = set()
+
+
 @app.post("/api/approve/{item_id}")
 async def approve(item_id: str, req: ApproveRequest) -> dict:
+    # Both request and webhook loops may share the same graph on this host.
+    with _approval_lock:
+        if item_id in _approval_inflight:
+            raise HTTPException(status_code=409, detail="该待审项正在处理")
+        _approval_inflight.add(item_id)
+    try:
+        return await _approve_once(item_id, req)
+    finally:
+        with _approval_lock:
+            _approval_inflight.discard(item_id)
+
+
+async def _approve_once(item_id: str, req: ApproveRequest) -> dict:
     item = _store().get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="待审项不存在")

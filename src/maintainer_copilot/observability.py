@@ -85,7 +85,8 @@ def traced(name, kind="span"):
             try:
                 result = await fn(*args, **kwargs)
                 if kind == "generation":
-                    attrs = {"gen_ai.response.model":result.model, "mc.used_fallback":result.used_fallback}
+                    attrs = {"gen_ai.response.model":result.model, "mc.used_fallback":result.used_fallback,
+                             "mc.fallback_reason":getattr(result,"fallback_reason","")}
                 return result
             except BaseException as exc:
                 failed = True

@@ -63,14 +63,16 @@ def parse_citations(answer: str) -> list[int]:
 
 
 def merge_results(batches: list[list[dict]]) -> list[dict]:
-    """合并多轮检索结果: 按 id 去重, 保留最高 rerank 分, 降序返回。"""
+    """合并多轮检索结果: 按 id 去重, 保留最高融合/rerank 分, 降序返回。"""
+    def score(item):
+        return item.get("federation_score", item.get("rerank_score", 0))
     merged: dict[str, dict] = {}
     for batch in batches:
         for item in batch:
             prev = merged.get(item["id"])
-            if prev is None or item.get("rerank_score", 0) > prev.get("rerank_score", 0):
+            if prev is None or score(item) > score(prev):
                 merged[item["id"]] = item
-    return sorted(merged.values(), key=lambda x: x.get("rerank_score", 0), reverse=True)
+    return sorted(merged.values(), key=score, reverse=True)
 
 
 class SolverWorker:

@@ -36,3 +36,11 @@ async def test_graph_multiturn_reset_isolation_and_anchor(monkeypatch):
     assert not (await graph.aget_state({"configurable":{"thread_id":"two"}})).values
     with pytest.raises(ValueError, match="switch repositories"):
         await graph.ainvoke({"repo":"other/repo", "messages":[{"role":"user","content":"q"}]}, config)
+
+
+def test_new_turn_cannot_reuse_previous_write_target():
+    from maintainer_copilot.memory.workflow import memory_node
+    updates=memory_node({'repo':'a/b','approval':'approved','draft_meta':{'issue_number':42},
+                         'draft':'old','citations':[{'path':'old'}],'messages':[]})
+    assert updates['draft_meta']=={} and updates['draft']=='' and updates['citations']==[]
+    assert updates['approval']=='pending'

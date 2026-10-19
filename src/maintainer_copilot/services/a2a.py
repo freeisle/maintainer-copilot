@@ -65,6 +65,8 @@ def create_app(backend=None, *, allowed_repos=None, token=None, url=None, timeou
             return error(-32602,"Invalid params")
         method = data.get("method")
         if method in ("tasks/get","tasks/cancel"):
+            if not isinstance(params.get("id"), str) or not params["id"]:
+                return error(-32602,"Task id must be a nonempty string")
             task = tasks.get(params.get("id"))
             if task is None:
                 return error(-32001,"Task not found")
@@ -92,7 +94,7 @@ def create_app(backend=None, *, allowed_repos=None, token=None, url=None, timeou
             docs = await asyncio.wait_for(retrieve(), timeout=timeout)
         except TimeoutError:
             return error(-32603,"Retrieval timeout")
-        except (OSError, ValueError, RuntimeError):
+        except Exception:
             return error(-32603,"Retrieval unavailable")
         task_id = uuid.uuid4().hex
         task = {"id":task_id,"contextId":message.get("contextId") or uuid.uuid4().hex,"kind":"task",
