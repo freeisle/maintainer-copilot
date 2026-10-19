@@ -1,0 +1,24 @@
+{
+  "quality": {
+    "missing_feedback_table": 1
+  },
+  "counts": {
+    "train": 0,
+    "validation": 0,
+    "test": 0
+  },
+  "sha256": {
+    "train": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "ready": false,
+  "gate": "minimum 40 train / 5 validation / 5 test; all human-reviewed; semantic review still required",
+  "existing_legacy_decisions": 2,
+  "environment": {
+    "torch": "2.14.0+cpu",
+    "transformers": "5.17.0",
+    "cuda": false
+  },
+  "business_model_trained": false
+}

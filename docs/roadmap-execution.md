@@ -116,3 +116,12 @@ Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现
 
 默认 opt-in、无内容的 Solver/LLM 父子 OTLP trace，评测入口关联数值 score，本地审计落盘，网络失败/partial rejection 脱敏日志、不重试。生成官方 v4.63.0 校验过的独立 Compose 与随机凭据（仅 ignored data），不覆盖或触碰原 RAG 库。实际执行 prepare 成功。
 `pytest tests/test_observability.py tests/test_llm.py tests/test_solver.py -q` → **14 passed**，真实本地 HTTP 接收 + 本地文件验证。无 Docker，无法验证真实 Langfuse UI/存储和基础设施镜像 digest，因此不勾选完成。
+
+
+阶段 11 提交：`58d574c`。
+
+## 阶段 12：后训练数据门槛与可运行训练流程
+
+只读审查发现旧 adoption 仅 2 条统计，没有完整反馈表；真实导出 train/validation/test 均为 0，ready=false，未改变业务模型。实现 approved/edited 目标采集、拒绝稿排除、凭据/长度/引用校验、问题分组隔离、数据 hash；训练本地 causal LM（prompt mask、梯度裁剪、seed）、独立模型落盘、相同 test 的训练前后 NLL/格式/token-F1/耗时对照。
+首轮合成训练测试因验证集只有 2 条被门槛正确拦截；增加合成测试源组后，实际 tiny GPT-2 CPU 训练/保存/重载与权重变化验证通过，未降低真实数据门槛。
+`pytest tests/test_training.py tests/test_llm.py tests/test_solver.py tests/test_skills.py tests/test_observability.py tests/test_mcp.py -q` → **32 passed**（其中训练 3 项）。这不是业务模型质量或收益结论。详见 posttraining.md 与 eval/reports/training-readiness.json。
