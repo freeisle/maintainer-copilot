@@ -18,6 +18,7 @@ from langgraph.graph.message import add_messages
 
 
 class Citation(TypedDict, total=False):
+    repo: str
     source: str  # code | doc | issue
     path: str  # 文件路径或 issue 编号
     snippet: str  # 引用片段

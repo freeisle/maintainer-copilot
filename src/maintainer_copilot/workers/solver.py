@@ -15,6 +15,7 @@ from ..memory.long_term import get_preference
 from ..models.llm import ModelProvider
 from ..rag.query_rewriter import QueryRewriter
 from ..rag.retriever import HybridRetriever
+from ..rag.federated import configured_retriever
 from ..skills.loader import skill_context
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,7 @@ class SolverWorker:
         skill_getter: Callable | None = None,
     ) -> None:
         self.llm = llm or ModelProvider()
-        self.retriever = retriever or HybridRetriever()
+        self.retriever = retriever or configured_retriever()
         self.rewriter = QueryRewriter(self.llm)
         self.max_context_chunks = max_context_chunks
         self.prefs_getter = prefs_getter or get_preference
@@ -112,7 +113,7 @@ class SolverWorker:
         except Exception as exc:  # noqa: BLE001 - Skill 加载失败不阻断回答
             logger.warning("加载仓库 Skill 失败, 跳过: %s", exc)
         context = "\n\n".join(
-            f"[{i}] ({d['source']}:{d['path']}) {d['text'][:600]}"
+            f"[{i}] ({d.get('repo', repo)} {d['source']}:{d['path']}) {d['text'][:600]}"
             for i, d in enumerate(docs, 1)
         )
         prompt = build_answer_prompt(repo, context, question, language_note, skill_note)
@@ -129,6 +130,7 @@ class SolverWorker:
                 "source": docs[n - 1]["source"],
                 "path": docs[n - 1]["path"],
                 "snippet": docs[n - 1]["text"][:300],
+                "repo": docs[n - 1].get("repo", repo),
             }
             for n in valid_cited
         ]

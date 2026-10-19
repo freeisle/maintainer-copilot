@@ -87,3 +87,10 @@ GitHub 工具外层 retries=0，5xx/网络最多仍为客户端的 4 次；401/�
 原 adoption note 仅 300 字，新增完整反馈表（不改旧表）、周级候选、审核记录与追加版本历史；候选不自动生效，版本冲突拒绝覆盖。生产 skill_context 读取审核后的 FAQ overlay，回滚无需修改代码文件。
 `scripts/skill_evolution.py` 提供本机生成/查看/审核/回滚命令；`eval/skill_regression.py` 在不激活候选的前提下比较真实 Solver QA 输出和引用硬指标。
 验证：`pytest -q tests/test_evolution.py tests/test_skills.py tests/test_adoption.py tests/test_solver.py` → **22 passed**。这验证工程闭环，不替代真实候选的语义质量评测；后者依赖真实反馈与检索后端，任务保留未完成。详见 `docs/skill-evolution.md`。
+
+阶段 7 提交：`ecfa09f`。
+
+## 阶段 8：显式联邦检索
+
+`FederatedRetriever` 仅按维护者配置扩展仓库，限定并发/超时，按源内排名融合，给 ID 和引用附上 repo；本地快照与混合检索均可复用。Solver 默认工厂接入配置。
+验证：`pytest -q tests/test_federated.py tests/test_solver.py` → **11 passed**，覆盖双仓库真实快照进入回答、无授权仓库隔离、部分失败和全部失败。配置见 `docs/services.md`。

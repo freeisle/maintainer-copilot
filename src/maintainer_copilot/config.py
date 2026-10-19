@@ -5,6 +5,7 @@
 """
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import AliasChoices, Field
@@ -40,6 +41,8 @@ class Settings(BaseSettings):
     dry_run: bool = True
     memory_max_tokens: int = Field(default=4000, ge=64)
     local_index_path: Path = PROJECT_ROOT / "data" / "retrieval-snapshot.jsonl"
+    retrieval_backend: Literal["hybrid", "local"] = "hybrid"
+    federation_repos: dict[str, list[str]] = Field(default_factory=dict)
 
     # 本地路径
     data_dir: Path = PROJECT_ROOT / "data"
