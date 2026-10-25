@@ -62,8 +62,12 @@ class HybridRetriever:
         import psycopg
         from pgvector.psycopg import register_vector_async
 
-        conn = await psycopg.AsyncConnection.connect(self.database_url)
-        await register_vector_async(conn)
+        conn = await psycopg.AsyncConnection.connect(self.database_url, connect_timeout=5)
+        try:
+            await register_vector_async(conn)
+        except BaseException:
+            await conn.close()
+            raise
         return conn
 
     async def _dense(self, repo: str, query: str, k: int) -> list[str]:

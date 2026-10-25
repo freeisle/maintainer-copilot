@@ -75,18 +75,21 @@ class Indexer:
         import psycopg
         from pgvector.psycopg import register_vector_async
 
-        conn = await psycopg.AsyncConnection.connect(self.database_url, autocommit=True)
-        await register_vector_async(conn)
+        conn = await psycopg.AsyncConnection.connect(self.database_url, connect_timeout=5)
+        try:
+            await register_vector_async(conn)
+        except BaseException:
+            await conn.close()
+            raise
         return conn
 
     async def init_schema(self) -> None:
-        conn = await self._conn()
-        try:
-            # 扩展按库启用, 幂等; 无权限时失败并让错误自然暴露
+        import psycopg
+
+        # A fresh database has no vector type to register yet.
+        async with await psycopg.AsyncConnection.connect(self.database_url, connect_timeout=5) as conn:
             await conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
             await conn.execute(DDL)
-        finally:
-            await conn.close()
 
     async def upsert_chunks(
         self, repo: str, chunks: list[Chunk], commit_sha: str | None = None
@@ -124,6 +127,9 @@ class Indexer:
             else:
                 vectors = [None] * len(changed)
 
+            if len(vectors) != len(changed):
+                raise ValueError("Embedding count does not match chunk count")
+
             for (cid, chunk, h), vector in zip(changed, vectors):
                 # 显式包装为 pgvector 类型: 裸 list 在部分 pgvector 版本下
                 # 会被 psycopg 按 double precision[] 序列化, 导致 <=> 算子无法匹配
@@ -152,6 +158,7 @@ class Indexer:
                     ),
                 )
                 stats["updated" if cid in existing else "inserted"] += 1
+            await conn.commit()
             return stats
         finally:
             await conn.close()
@@ -163,6 +170,7 @@ class Indexer:
             cur = await conn.execute(
                 "DELETE FROM chunks WHERE repo = %s AND path = %s", (repo, path)
             )
+            await conn.commit()
             return cur.rowcount
         finally:
             await conn.close()
