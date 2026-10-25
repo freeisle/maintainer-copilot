@@ -25,12 +25,12 @@ uv run python -m scripts.prepare_retrieval_db --reuse-legacy-vectors
 $env:MC_DATABASE_URL=$env:MC_TEST_DATABASE_URL
 $env:OMP_NUM_THREADS='4'
 $env:MKL_NUM_THREADS='4'
-uv run python -m eval.run_eval --suite retrieval --dataset retrieval-v2 --no-rewrite
+uv run python -m eval.run_eval --suite retrieval --dataset retrieval-v2 --no-rewrite --rerank-batch-size 4
 ```
 
 可省略 `--reuse-legacy-vectors` 全量重算。启用时原应用库以只读事务读取，按 repo + 全文匹配复用历史向量；相同键存在冲突则重新计算。抽查三行与当前模型 cosine≥0.999；此抽查并非全量模型溯源证明。报告保存复用/重算数量、向量摘要和数据集 hash，不保存向量或凭据。原库不执行清理。
 
-评测固定 k=8，额外记录 Recall@5；记录通道文档、失败样本、模型名、代码 SHA、数据库/扩展版本。关闭外部 LLM 改写使本轮无付费 API 依赖。与历史 n=8（含改写）不能直接比较；与 n=24 词法对照使用同一语料，但算法通道不同，只作后端对照，不能归因于单一优化。
+评测固定 k=8，重排批量 4（默认 32 不变，仅降低内存峰值；不改变精度/截断/候选池），额外记录 Recall@5；记录通道文档、失败样本、模型名、代码 SHA、数据库/扩展版本。关闭外部 LLM 改写使本轮无付费 API 依赖。与历史 n=8（含改写）不能直接比较；与 n=24 词法对照使用同一语料，但算法通道不同，只作后端对照，不能归因于单一优化。
 
 ## 历史数据副本演练
 

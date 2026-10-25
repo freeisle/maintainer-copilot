@@ -11,8 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 class Reranker:
-    def __init__(self, model: str = "BAAI/bge-reranker-v2-m3") -> None:
+    def __init__(self, model: str = "BAAI/bge-reranker-v2-m3", batch_size: int = 32) -> None:
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive")
         self.model = model
+        self.batch_size = batch_size
         self._encoder = None
 
     def _load(self):
@@ -29,7 +32,7 @@ class Reranker:
             return []
         model = self._load()
         pairs = [(query, c["text"]) for c in candidates]
-        scores = model.predict(pairs)
+        scores = model.predict(pairs, batch_size=self.batch_size)
         ranked = sorted(zip(candidates, scores), key=lambda item: item[1], reverse=True)
         out = [{**c, "rerank_score": float(score)} for c, score in ranked]
         return out[:top_k] if top_k else out

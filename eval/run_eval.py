@@ -251,6 +251,7 @@ async def run_retrieval_suite(
     rerank: bool = True,
     check: bool = False,
     dataset: str = "retrieval",
+    rerank_batch_size: int = 32,
 ) -> dict:
     """检索评测: 问题 -> 标注文档键的 hit@1/3/k + MRR + Recall + 分通道诊断。
 
@@ -269,7 +270,7 @@ async def run_retrieval_suite(
     data = load_dataset(dataset)
     if limit:
         data = data[:limit]
-    retriever = HybridRetriever(reranker=Reranker())
+    retriever = HybridRetriever(reranker=Reranker(batch_size=rerank_batch_size))
     if not rerank:
         # 构造器传 None 会落到默认 Reranker, 消融必须显式置空
         retriever.reranker = None
@@ -366,6 +367,7 @@ async def run_retrieval_suite(
         "reranker_model": retriever.reranker.model if rerank else None,
         "rrf_k": 60,
         "rerank_pool": 50,
+        "rerank_batch_size": rerank_batch_size,
         "packages": {name: package_version(name) for name in
                      ("psycopg", "pgvector", "torch", "sentence-transformers", "rank-bm25")},
         "repositories": sorted({x["repo"] for x in data}),
@@ -404,6 +406,7 @@ def main() -> None:
     parser.add_argument("--k", type=int, default=8, help="retrieval: hit@k/MRR/Recall 的截断位置")
     parser.add_argument("--no-rewrite", action="store_true", help="retrieval: 关闭 LLM 查询改写")
     parser.add_argument("--no-rerank", action="store_true", help="retrieval: 关闭 rerank(融合排序消融)")
+    parser.add_argument("--rerank-batch-size", type=int, default=32, help="retrieval: 重排批大小，仅影响内存/吞吐")
     parser.add_argument("--check", action="store_true", help="retrieval: 仅校验标注是否存在于知识库")
     parser.add_argument("--dataset", choices=["retrieval", "retrieval-v2"], default="retrieval")
     args = parser.parse_args()
@@ -429,6 +432,7 @@ def main() -> None:
                 rerank=not args.no_rerank,
                 check=args.check,
                 dataset=args.dataset,
+                rerank_batch_size=args.rerank_batch_size,
             )
         )
         if args.check:
