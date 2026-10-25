@@ -35,5 +35,37 @@
     "  Functions: 8",
     "  Options: Inlining true, Optimization true, Expressions true, Deforming true"
   ],
-  "source_unchanged": true
+  "source_unchanged": true,
+  "restored_vector_search_samples": [
+    {
+      "alias": "02b6217c9a32487a",
+      "canonical": "0dc16b40b948a61c",
+      "both_in_hnsw_top20": true,
+      "returned": 20
+    },
+    {
+      "alias": "0387c2dc615bfb6c",
+      "canonical": "fd811389e662b0f2",
+      "both_in_hnsw_top20": true,
+      "returned": 20
+    },
+    {
+      "alias": "05029531abbc1ecb",
+      "canonical": "4a7530d993e8e4ee",
+      "both_in_hnsw_top20": true,
+      "returned": 20
+    },
+    {
+      "alias": "0d63e6cc65479f6a",
+      "canonical": "d9217d2d151c7695",
+      "both_in_hnsw_top20": true,
+      "returned": 20
+    },
+    {
+      "alias": "1330671b8f4ec84f",
+      "canonical": "85e9e05004850dcf",
+      "both_in_hnsw_top20": true,
+      "returned": 20
+    }
+  ]
 }

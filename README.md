@@ -73,6 +73,8 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 
 报告生成于 `docs/eval-report/`，可通过 `python -m eval.run_eval` 复现。
 
+2026-10-25 新增 [真实 PostgreSQL / pgvector v2 回归](eval/reports/retrieval-pgvector-v2.md)：n=24、3 仓库，Hit@3 **0.7917** / Recall@5 **0.7569** / MRR@8 **0.6806**。保留 3 条 top-8 未命中；与上表历史 n=8 不直接比较。环境、隔离测试和恢复演练见 [实库验证说明](docs/postgres-validation.md)。
+
 ### 分诊迭代记录（如实）
 
 判别规则增强后基线 0.4886 → **0.4922**（77 样本 4 类），目标（macro≥0.55 / feature≥0.70）未达成。27 例错误三层根因（详见 triage 报告分析）：
@@ -102,7 +104,7 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 | M2 | 分诊 + HITL 闭环（webhook → 草稿 → 审核台 → 发布）+ 评测体系 | ✅ |
 | M2.5 | 引用约束收紧、PR 初审、长期版本化偏好、工具选择评测、Skill 加载、增量更新、CI、采纳率采集 | ✅ |
 | Roadmap 扩展 | 持久化/记忆/限流快照/评测扩充/联邦检索/A2A/Java MCP | ✅（详见验收记录） |
-| 待外部验证 | 历史索引清理、混合召回实库回归、Skill 语义回归、Langfuse 部署、业务后训练 | 🔲 |
+| 待外部验证 | 原库历史索引清理、Skill 语义回归、Langfuse 部署、业务后训练 | 🔲 |
 
 ## 当前边界（如实记录）
 
@@ -114,7 +116,7 @@ uv run python -m eval.run_eval --suite triage --repo eval/dubbo  # 分诊 F1 评
 | 编排粒度 | Supervisor + 3 Worker 均为 `add_node` 注册的普通节点函数；未使用 LangGraph 已编译子图 |
 | 工具层 | 已注册 3 个读工具（底层客户端 13 个公开方法：11 读 + 2 写）；Registry 的校验 / 超时 / 结构化错误对外经 MCP 暴露，图内 Worker 直接调用检索与 GitHub 客户端 |
 | 限流 | 429/明确限流 403 接入本地快照证据降级；鉴权失败/超时不触发此降级；GitHub 外层不重复重试 |
-| 检索指标 | baseline 已跑出：Hit@3=0.75 / Recall@5=0.5208 / MRR=0.5417（n=8，单次运行）；原 baseline 保留；另增 n=24/3 仓库 v2 和离线词法对照，不能与 n=8 混合检索直接比较 |
+| 检索指标 | baseline 已跑出：Hit@3=0.75 / Recall@5=0.5208 / MRR=0.5417（n=8，单次运行）；原 baseline 保留；另有 n=24/3 仓库 v2 离线词法、真实 pgvector 混合及 rerank 消融；原库保持不变，不能与 n=8 直接比较 |
 | 判官 | 单判官 + `temperature=0`，与生成侧同源；交叉校验依赖程序硬指标（引用精确率）。双判官 / 位置交换在 roadmap |
 | 短期记忆 | 已接入 LangGraph 入口、Solver 上下文和 CLI；同一 checkpoint 保存有界历史，线程隔离及任务锚点测试通过 |
 

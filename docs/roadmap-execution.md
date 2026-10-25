@@ -171,3 +171,64 @@ Spring Boot 3.5.7 / Spring AI 1.1.0 工具服务提供只读 `inspect_pom`，现
 最终完整回归 `pytest -q --basetemp=data/test-tmp-final-acceptance` → **154 passed, 1 warning**（anyio/Starlette 依赖弃用，无失败/跳过）；其后新增的 3 项 PostgreSQL 测试已单独实际执行通过。默认不提供 MC_TEST_DATABASE_URL 时这 3 项明确 skip，不连接生产数据库。
 
 PostgreSQL 补充验证提交：`2d15232`。
+
+## 2026-10-25：PostgreSQL / pgvector 实库验证
+
+起点 `d693063`，本地/远端 `feat/roadmap-implementation` 一致，工作区干净。通过只读 SSH 确认容器 `3654a3fd7d8a` / `pgvector` 位于既有虚拟机，而非 Windows 本机；宿主机 5433 可达。容器 running，无 Docker HEALTHCHECK；`pg_isready` 接受连接。日志显示复用旧数据目录，数据库为 PostgreSQL 16.15 / pgvector 0.8.6。
+
+原应用库只读检查：7,198 行（eval/dubbo 240、eval/rocketmq 210、freeisle/12306 1,576、freeisle/ragent 5,172），全部存在向量，类型 vector(1024)，HNSW cosine 索引存在。不把容器启动等同于历史数据已完整恢复。
+
+创建独立 `mc_test_pgvector_20261025`；测试连接仅存在 ignored 本地文件并通过 `MC_TEST_DATABASE_URL` 传递，不改原 `.env`。测试拒绝非 `mc_test_` 库，逐例创建和清理随机 schema。另保留独立 bootstrap 测试库，实际验证从无 vector 扩展开始连续初始化两次成功。
+
+### 数据库修复与专项验证
+
+提交 `06ac60a`：修复注册 vector 类型早于 CREATE EXTENSION 的新库初始化错误；upsert 批次改为事务原子提交，校验 embedding 数量，类型注册失败关闭连接，连接超时 5 秒。现有 delete_by_path 与 upsert 之间仍是两个独立事务，不扩大承诺。
+
+`uv run pytest -q tests/test_pgvector.py tests/test_dedup_postgres.py` → **8 passed / 0 failed / 0 skipped**。真实 vector(1024) 写读/维度校验、cosine 排序、仓库与 ID 隔离、精确通道、批次失败回滚、异常后恢复、HNSW 查询计划均验证；备份/恢复测试已替换旧 double precision[]，验证完整向量行、相似记录保留、跨仓库、幂等及失败回滚。确定性向量只验证 SQL，不作为模型质量证据。
+
+### 历史副本演练
+
+`uv run python -m scripts.verify_legacy_copy`：只读复制全部 7,198 行到测试库随机 schema；ragent 预览 79 条别名，其余三个仓库 0。副本清理、再次执行无候选、完整行恢复、再次恢复零新增均通过；恢复后全行摘要与复制前一致，HNSW 可用，原库前后摘要一致。副本与备份保留在测试库供审查。报告：`eval/reports/pgvector-legacy-copy.json`。
+
+原库历史索引没有执行迁移/清理，故「减少重复入库」仍为部分完成；真实语料副本演练已经解除 vector 类型兼容、备份恢复和事务回滚的验证阻塞。原库实施仍需明确授权和独立可恢复备份。
+
+### 完整回归的环境纠正
+
+首次 `uv run pytest -q` → **161 passed / 1 failed / 0 skipped**。失败为已有 Java MCP 进程：当前 PATH 选中 JDK 8，报 UnsupportedClassVersionError（class file 61，运行时最高 52）。仅在后续测试进程设置已有 JDK 21 的 JAVA_HOME/PATH；未修改断言、未跳过 Java 测试、未改系统默认 Java。
+
+复现步骤和安全边界见 `docs/postgres-validation.md`。Skill 语义反馈、Langfuse 完整自托管和业务后训练状态不受本次实库验收影响。
+
+纠正 Java 运行时后的 `uv run pytest -q` → **162 passed / 0 failed / 0 skipped**，耗时 259.86 秒；仅 1 条 Starlette/anyio 依赖弃用警告。Java 模块未改动，实际 Python→Spring Boot MCP 测试随全量通过，因此本轮不另做 Maven 构建。`python -m compileall -q src scripts eval tests` 通过。
+
+### 固定语料与真实检索设置
+
+构建/验证工具提交 `4946d63`。`uv run python -m scripts.prepare_retrieval_db --reuse-legacy-vectors` 成功构建固定 6,349-chunk 语料（12306 1,539 / ragent 4,611 / 本项目 199），全部 vector(1024)。与离线对照相同 snapshot SHA256：`d17e7ad54a4608e01e752b6d6cba97d1d445be6c6dc400062a6d2f7e1a65fafa`。
+
+6,114 条复用同 repo/全文的历史向量，235 条使用当前 BGE-M3 重算（219 个唯一 repo/text）。历史中 63 个键存在不同向量，全部从复用候选排除；这 63 个键并非全部出现在本轮快照中，不把它们计作重算数量。抽查 3 个复用向量与当前模型的 cosine 均大于 0.99999999999。历史 baseline 声明 BGE-M3，但没有逐行模型版本记录；抽查不能代替全量溯源。语料报告生成时库代码为 `06ac60a`，准备脚本尚在工作区，脚本及报告随后纳入 `4946d63`。
+
+本地模型 revision：BGE-M3 `5617a9f61b028005a4858fdac845db406aefb181`；BGE-reranker-v2-m3 `953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e`。HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE 开启，CPU / OMP_NUM_THREADS=4 / MKL_NUM_THREADS=4；模型使用现有默认精度、截断和打分。RRF K=60，候选池 50，最终 k=8，关闭外部 LLM 改写，保留本地 rerank。
+
+三仓库的参数化 cosine SQL 抽查均返回请求的 50 条。实际优化器在此规模采用 Seq Scan 或 repo Bitmap Scan 后距离排序，不声称本轮所有检索请求都走 HNSW；HNSW 存在及可执行已在专项和历史副本强制索引计划中验证。计划见 `eval/reports/pgvector-plan.json`，已省略向量字面值。pytest 随机 schema 最后检查为 0 个残留；历史演练 schema 和 bootstrap 测试库主动保留。
+
+
+第一次 n=24 混合检索在默认重排 batch_size=32 下出现显著本机内存压力（可用不足 1 GB），完成的前两条均 hit@8=1 / MRR=1 / Recall@8=1；主动停止该未完成试跑，日志仅保留在 ignored data，不作为完整评测。为降低峰值增加 `--rerank-batch-size` 参数，默认仍为 32，本轮改为 4；不改模型精度、截断、候选池和标签。后续必须重新完整执行全部 24 条，不能拼接试跑结果。
+
+在评测 public.chunks 已创建后，全量回归暴露测试自身依赖：临时改表名的故障注入会沿 search_path 找到 public 同名表，因此没有触发 UndefinedTable（162 passed / 1 failed）。改为在测试 schema 的表内临时改 embedding 列名，严格断言 UndefinedColumn，恢复列后重新验证检索；没有放宽断言或跳过错误路径。测试连接使用脱敏 repr，避免失败报告展示 DSN。此修改后 PostgreSQL 专项再跑 **8 passed / 0 failed / 0 skipped**。
+
+
+批量配置提交 `baf5ead`；测试隔离/脱敏修复提交 `7d5b77d`。最终代码 `uv run pytest -q` → **163 passed / 0 failed / 0 skipped**，耗时 138.53 秒，1 条既有依赖弃用警告。8 项真实 PostgreSQL 测试和真实 Java MCP 进程测试全部包含在内。未修改 Java 模块，因此未额外执行 Maven。
+
+
+### 最终检索结果与本轮状态
+
+主评测命令 `uv run python -m eval.run_eval --suite retrieval --dataset retrieval-v2 --no-rewrite --rerank-batch-size 4`，**24/24 实际完成，无跳过/通道错误**：Hit@3=0.7917、Recall@5=0.7569、MRR@8=0.6806、Hit@8=0.8750、Recall@8=0.7917。报告 `docs/eval-report/retrieval-20261025-172045.md`。代码 SHA baf5ead，后续 7d5b77d 仅测试改动。
+
+同库同语料增加 `--no-rerank`：**24/24 实际完成**，Hit@3=0.6667、Recall@5=0.7282、MRR@8=0.5951；报告 `docs/eval-report/retrieval-20261025-172414.md`。全量设置、依赖版本、期望/实际文档与分通道 top-8 均记录。仅该消融可用于判断本固定集 rerank 的影响，不把 n=8 历史 baseline、n=24 离线和 n=24 混合的差值当作单一优化收益。
+
+主评测未命中 ret-004/007/014；ret-004 无 rerank 可召回第 4 位相关文档，启用后丢失；其余两者两种模式均未命中。总体 rerank 提升三项指标，但未修复全部难例。详见 `eval/reports/retrieval-pgvector-v2.md`。
+
+最终只读审计：原库 7,198 行完整摘要未变，测试语料 6,349 行全部带向量，24 条查询标注文档全部存在，pytest 随机 schema 残留为 0。历史恢复副本另抽查 5 组别名/规范记录，通过 EXPLAIN ANALYZE 确认实际 HNSW 执行，5/5 均在 top-20 中找回两条记录；补充证据已写入 legacy-copy 报告。
+
+本轮将召回覆盖优化的实库验收标记完成；Roadmap 当前 8 项完成、4 项仍部分完成。减少重复入库仍保留 `[ ]`：原库清理需独立授权与可恢复备份，本轮仅操作测试库。Skill 真实反馈语义收益、Langfuse 完整部署、业务后训练继续保留未完成。
+
+功能/工具/测试阶段提交：06ac60a、4946d63、baf5ead、7d5b77d；最终报告与 Roadmap 状态纳入后续文档提交。完整 Python 回归最终为 163 passed / 0 failed / 0 skipped，Java 未修改，不重复 Maven 构建。所有原始连接、日志、模型、快照、数据库数据均不进入 Git。

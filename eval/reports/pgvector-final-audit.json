@@ -1,0 +1,24 @@
+{
+  "verified_at": "2026-10-25T17:16:39.691577+08:00",
+  "original_rows": 7198,
+  "original_full_row_digest_unchanged": true,
+  "test_corpus_counts": [
+    [
+      "freeisle/12306",
+      1539,
+      1539
+    ],
+    [
+      "freeisle/ragent",
+      4611,
+      4611
+    ],
+    [
+      "local/maintainer-copilot",
+      199,
+      199
+    ]
+  ],
+  "missing_labels": {},
+  "remaining_pytest_schemas": 0
+}

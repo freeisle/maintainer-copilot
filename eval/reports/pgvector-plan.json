@@ -1,0 +1,44 @@
+[
+  {
+    "repo": "freeisle/ragent",
+    "requested": 50,
+    "returned": 50,
+    "plan": [
+      "Limit  (cost=973.06..973.19 rows=50 width=25)",
+      "  ->  Sort  (cost=973.06..984.59 rows=4611 width=25)",
+      "        Sort Key: embedding cosine distance (vector omitted)",
+      "        ->  Seq Scan on chunks  (cost=0.00..819.89 rows=4611 width=25)",
+      "              Filter: ((embedding IS NOT NULL) AND (repo = 'freeisle/ragent'::text))"
+    ]
+  },
+  {
+    "repo": "freeisle/12306",
+    "requested": 50,
+    "returned": 50,
+    "plan": [
+      "Limit  (cost=827.42..827.54 rows=50 width=25)",
+      "  ->  Sort  (cost=827.42..831.27 rows=1539 width=25)",
+      "        Sort Key: embedding cosine distance (vector omitted)",
+      "        ->  Bitmap Heap Scan on chunks  (cost=24.21..776.29 rows=1539 width=25)",
+      "              Recheck Cond: (repo = 'freeisle/12306'::text)",
+      "              Filter: (embedding IS NOT NULL)",
+      "              ->  Bitmap Index Scan on idx_chunks_repo  (cost=0.00..23.82 rows=1539 width=0)",
+      "                    Index Cond: (repo = 'freeisle/12306'::text)"
+    ]
+  },
+  {
+    "repo": "local/maintainer-copilot",
+    "requested": 50,
+    "returned": 50,
+    "plan": [
+      "Limit  (cost=459.99..460.11 rows=50 width=25)",
+      "  ->  Sort  (cost=459.99..460.48 rows=199 width=25)",
+      "        Sort Key: embedding cosine distance (vector omitted)",
+      "        ->  Bitmap Heap Scan on chunks  (cost=5.82..453.38 rows=199 width=25)",
+      "              Recheck Cond: (repo = 'local/maintainer-copilot'::text)",
+      "              Filter: (embedding IS NOT NULL)",
+      "              ->  Bitmap Index Scan on idx_chunks_repo  (cost=0.00..5.77 rows=199 width=0)",
+      "                    Index Cond: (repo = 'local/maintainer-copilot'::text)"
+    ]
+  }
+]
