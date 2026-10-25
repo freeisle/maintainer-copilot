@@ -10,8 +10,11 @@
 import argparse
 import asyncio
 import json
+import hashlib
 import logging
 import sys
+import subprocess
+from importlib.metadata import version as package_version
 from datetime import datetime
 from pathlib import Path
 
@@ -261,6 +264,8 @@ async def run_retrieval_suite(
     from maintainer_copilot.rag.retriever import HybridRetriever
     from maintainer_copilot.workers.solver import merge_results
 
+    started_at = datetime.now().astimezone().isoformat()
+    code_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     data = load_dataset(dataset)
     if limit:
         data = data[:limit]
@@ -293,8 +298,9 @@ async def run_retrieval_suite(
                 ids = await channel(repo, question, k)
                 docs = await retriever._fetch(repo, ids)
                 hits[name] = bool({metrics.doc_key(d) for d in docs} & relevant)
+                hits[name + "_documents"] = list(dict.fromkeys(metrics.doc_key(d) for d in docs))
             except Exception as exc:  # noqa: BLE001 - 单通道故障不阻断整体评测
-                hits[name] = f"error: {exc}"
+                hits[name] = f"error: {type(exc).__name__}"
         return hits
 
     per_item: list[dict] = []
@@ -332,6 +338,7 @@ async def run_retrieval_suite(
             f"hit@{k}": metrics.retrieval_hit_at_k(relevant, retrieved, k=k),
             "mrr": metrics.mrr_at_k(relevant, retrieved, k=k),
             "recall": metrics.recall_at_k(relevant, retrieved, k=k),
+            "recall@5": metrics.recall_at_k(relevant, retrieved, k=5),
             "channel_hits": await _channel_hits(repo, question, relevant),
         }
         per_item.append(record)
@@ -350,6 +357,18 @@ async def run_retrieval_suite(
         write_report("retrieval-check", report)
         return report
     report = {
+        "dataset": dataset,
+        "dataset_sha256": hashlib.sha256((DATASETS / f"{dataset}.jsonl").read_bytes()).hexdigest(),
+        "code_sha": code_sha,
+        "started_at": started_at,
+        "backend": "PostgreSQL/pgvector + BM25 + exact + RRF",
+        "embedding_model": retriever.embedder.model,
+        "reranker_model": retriever.reranker.model if rerank else None,
+        "rrf_k": 60,
+        "rerank_pool": 50,
+        "packages": {name: package_version(name) for name in
+                     ("psycopg", "pgvector", "torch", "sentence-transformers", "rank-bm25")},
+        "repositories": sorted({x["repo"] for x in data}),
         "samples": len(data),
         "k": k,
         "rewrite": rewrite,
@@ -359,8 +378,19 @@ async def run_retrieval_suite(
         f"hit@{k}": avg(f"hit@{k}"),
         "mrr": avg("mrr"),
         "recall": avg("recall"),
+        "recall@5": avg("recall@5"),
         "per_item": per_item,
     }
+    conn = await retriever._conn()
+    try:
+        cur = await conn.execute("SELECT current_setting('server_version'), "
+                                 "(SELECT extversion FROM pg_extension WHERE extname='vector')")
+        version = await cur.fetchone()
+        report["database"] = {"postgres": version[0], "pgvector": version[1]}
+        cur = await conn.execute("SELECT repo,count(*),count(embedding) FROM chunks GROUP BY repo ORDER BY repo")
+        report["corpus_counts"] = await cur.fetchall()
+    finally:
+        await conn.close()
     write_report("retrieval", report)
     return report
 

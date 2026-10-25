@@ -1,0 +1,39 @@
+{
+  "test_database": "mc_test_pgvector_20261025",
+  "retained_schema": "legacy_copy_20a02d59b42e49d482aa87f39442e6a1",
+  "source_rows": 7198,
+  "repositories": [
+    {
+      "repo": "eval/dubbo",
+      "aliases": 0,
+      "restore_exact": true
+    },
+    {
+      "repo": "eval/rocketmq",
+      "aliases": 0,
+      "restore_exact": true
+    },
+    {
+      "repo": "freeisle/12306",
+      "aliases": 0,
+      "restore_exact": true
+    },
+    {
+      "repo": "freeisle/ragent",
+      "aliases": 79,
+      "restore_exact": true
+    }
+  ],
+  "hnsw_plan": [
+    "Limit  (cost=10000002006.19..10000002026.31 rows=5 width=25)",
+    "  InitPlan 1 (returns $0)",
+    "    ->  Limit  (cost=10000000000.00..10000000000.13 rows=1 width=18)",
+    "          ->  Seq Scan on chunks chunks_1  (cost=10000000000.00..10000000973.38 rows=7238 width=18)",
+    "  ->  Index Scan using idx_chunks_embedding on chunks  (cost=2006.05..31128.76 rows=7238 width=25)",
+    "        Order By: (embedding <=> $0)",
+    "JIT:",
+    "  Functions: 8",
+    "  Options: Inlining true, Optimization true, Expressions true, Deforming true"
+  ],
+  "source_unchanged": true
+}

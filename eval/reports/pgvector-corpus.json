@@ -1,0 +1,64 @@
+{
+  "code_sha": "06ac60af172150def5b018af788f153fa491ebef",
+  "database": "mc_test_pgvector_20261025",
+  "postgres": "16.15 (Debian 16.15-1.pgdg12+2)",
+  "pgvector": "0.8.6",
+  "dimension": 1024,
+  "snapshot_sha256": "d17e7ad54a4608e01e752b6d6cba97d1d445be6c6dc400062a6d2f7e1a65fafa",
+  "vector_digest": "965fc347906d8055a3824764c3134d7a6554d0c45947a5be1d4bc785d167ed44",
+  "counts": [
+    [
+      "freeisle/12306",
+      1539,
+      1539
+    ],
+    [
+      "freeisle/ragent",
+      4611,
+      4611
+    ],
+    [
+      "local/maintainer-copilot",
+      199,
+      199
+    ]
+  ],
+  "source_counts": [
+    [
+      "eval/dubbo",
+      240
+    ],
+    [
+      "eval/rocketmq",
+      210
+    ],
+    [
+      "freeisle/12306",
+      1576
+    ],
+    [
+      "freeisle/ragent",
+      5172
+    ]
+  ],
+  "reused_exact_repo_text_vectors": 6114,
+  "newly_embedded_chunks": 235,
+  "embedding_model": "BAAI/bge-m3",
+  "compatibility_samples": [
+    {
+      "id": "00140159fc2f6b80",
+      "cosine": 0.9999999999980335
+    },
+    {
+      "id": "0024aafc22946179",
+      "cosine": 0.9999999999963767
+    },
+    {
+      "id": "004866e4fb4157d6",
+      "cosine": 0.9999999999977511
+    }
+  ],
+  "legacy_provenance": "historical baseline declares BGE-M3; only three rows recomputed",
+  "conflicting_legacy_keys_excluded": 63,
+  "newly_embedded_unique_texts": 219
+}
