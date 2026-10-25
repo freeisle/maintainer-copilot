@@ -159,6 +159,17 @@ class CodeChunker:
         type_nodes = _TYPE_NODES[lang_name]
         method_nodes = _METHOD_NODES[lang_name]
         for node in tree.root_node.named_children:
+            # Python module documentation contains caller contracts and error clues.
+            # It is outside function/type nodes and was silently discarded.
+            if (lang_name == "python" and node == tree.root_node.named_children[0]
+                    and node.type == "expression_statement" and node.named_children
+                    and node.named_children[0].type == "string"):
+                body = src[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
+                chunks.extend(Chunk(text=body[i:i + self.max_chars], source="code",
+                                    meta={"path": path, "symbol": "<module-doc>",
+                                          "kind": "module_doc", "start": node.start_point[0] + 1,
+                                          "part_idx": idx})
+                              for idx, i in enumerate(range(0, len(body), self.max_chars)))
             if node.type in type_nodes:
                 chunks.extend(self._split_type(src, node, path, lang_name))
             elif node.type in method_nodes:
@@ -232,6 +243,6 @@ class CodeChunker:
 
     def _fallback(self, text: str, path: str) -> list[Chunk]:
         return [
-            Chunk(text=text[i : i + self.max_chars], source="code", meta={"path": path})
-            for i in range(0, len(text), self.max_chars)
+            Chunk(text=text[i : i + self.max_chars], source="code", meta={"path": path, "part_idx": idx})
+            for idx, i in enumerate(range(0, len(text), self.max_chars))
         ]

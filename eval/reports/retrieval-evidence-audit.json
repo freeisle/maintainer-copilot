@@ -1,0 +1,30 @@
+{
+  "snapshot_sha256": "d17e7ad54a4608e01e752b6d6cba97d1d445be6c6dc400062a6d2f7e1a65fafa",
+  "checks": [
+    {
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/tools/order_tools.py",
+      "source_sha256": "73836cd61deb4d93b72c5cad19b4cb100fa1a1c2fa91b7a2e1c5a5bf629a9745",
+      "evidence": "StringIndexOutOfBoundsException",
+      "source_contains": true,
+      "fixed_snapshot_contains": false,
+      "snapshot_chunks": 8,
+      "corrected_chunks": 9,
+      "unique_corrected_ids": 9,
+      "corrected_contains": true
+    },
+    {
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/dashboardService.ts",
+      "source_sha256": "fc6cb3c8020dd322d6fa92f85c6df6fe544916d8555761de35931c444a5e5fe7",
+      "evidence": "getDashboardKbHitRate",
+      "source_contains": true,
+      "fixed_snapshot_contains": true,
+      "snapshot_chunks": 1,
+      "corrected_chunks": 2,
+      "unique_corrected_ids": 2,
+      "corrected_contains": true
+    }
+  ],
+  "note": "Source-side chunk generation only; fixed PostgreSQL corpus was NOT rebuilt."
+}

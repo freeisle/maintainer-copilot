@@ -86,3 +86,22 @@ def test_hard_split_chunks_have_distinct_ids() -> None:
     chunks = DocChunker(max_chars=1000).split(text, "x.md")
     ids = {chunk_id("r", c) for c in chunks}
     assert len(ids) == len(chunks)
+
+
+def test_fallback_chunk_ids_do_not_overwrite_earlier_evidence():
+    from maintainer_copilot.rag.chunkers import CodeChunker
+    chunks = CodeChunker(max_chars=10).split("early evidence middle later evidence", "file.unknown")
+    indexed = {chunk_id("repo", c): c for c in chunks}
+    assert len(indexed) == len(chunks) == 4
+    assert "".join(c.text for c in indexed.values()) == "early evidence middle later evidence"
+    assert not set(indexed) & {chunk_id("other", c) for c in chunks}
+
+
+def test_python_module_contract_is_preserved_with_methods():
+    from maintainer_copilot.rag.chunkers import CodeChunker
+    source = '\"\"\"Empty entries cause RemoteFailure; callers must pass an empty list.\"\"\"\ndef submit():\n    return []\n'
+    chunks = CodeChunker(max_chars=30).split(source, "client.py")
+    docs = [c for c in chunks if c.meta.get("kind") == "module_doc"]
+    assert "RemoteFailure" in "".join(c.text for c in docs)
+    assert any(c.meta.get("method") == "submit" for c in chunks)
+    assert len({chunk_id("repo", c) for c in chunks}) == len(chunks)

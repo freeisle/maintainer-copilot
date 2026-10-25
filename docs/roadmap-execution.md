@@ -239,3 +239,5 @@ PostgreSQL 补充验证提交：`2d15232`。
 起点 c75c247，本地与远端一致、工作区干净。只读确认隔离库仍为 PostgreSQL 16.15 / pgvector 0.8.6，固定 6349 行及数据集/快照 SHA256 与上一轮一致。先补齐主链路可选 per-call trace，再根据完整候选证据选择独立开关实验；最后做同口径消融和性能验证。默认排序与标签不变。
 
 第一阶段：`retrieve(trace=...)` 记录完整通道池、dense/BM25 分数、完整 RRF 联集、重排前后与覆盖结果、阶段耗时。诊断不二次计算 embedding，异常不伪装成空成功。`python -m eval.diagnose_retrieval --output <new.json>` 只允许固定行数的 mc_test_ 数据库，拒绝覆盖报告。`uv run pytest -q tests/test_retrieval_trace.py tests/test_rrf.py tests/test_lexical.py tests/test_pgvector.py` → 13 passed，包含真实 PostgreSQL 4 项，其余为单元测试。后续实验尚未验收，不修改完成状态。
+
+切分缺陷修复：Python 模块 docstring 未被 AST 主循环处理，ret-014 标注依据在源码中但不在固定快照；行窗回退缺少 part_idx 导致主键碰撞，dashboardService.ts 仅保留最后一段。不过其 getDashboardKbHitRate 仍在该尾段，不能将 ret-007 全部归因于语料丢失。补充模块说明 chunk 和回退分段标识，不改变既有方法 ID，不对固定库执行重建。`uv run pytest -q tests/test_chunkers.py tests/test_code_chunker.py` → 14 passed。源码生成审计见 eval/reports/retrieval-evidence-audit.json；这不是修复后的检索收益实验。历史旧索引需要未来独立迁移，不纳入同口径 E0–E3。
