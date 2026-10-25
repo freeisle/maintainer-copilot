@@ -11,9 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
-
-from rank_bm25 import BM25Okapi
+from time import perf_counter
 
 from ..config import get_settings
 from .embedder import Embedder
@@ -70,16 +68,18 @@ class HybridRetriever:
             raise
         return conn
 
-    async def _dense(self, repo: str, query: str, k: int) -> list[str]:
+    async def _dense(self, repo: str, query: str, k: int, scores: dict | None = None) -> list[str]:
         vec = Vector(self.embedder.embed_query(query))
         conn = await self._conn()
         try:
             cur = await conn.execute(
-                "SELECT id FROM chunks WHERE repo = %s AND embedding IS NOT NULL "
+                "SELECT id, 1 - (embedding <=> %s) FROM chunks WHERE repo = %s AND embedding IS NOT NULL "
                 "ORDER BY embedding <=> %s LIMIT %s",
-                (repo, vec, k),
+                (vec, repo, vec, k),
             )
             rows = await cur.fetchall()
+            if scores is not None:
+                scores.update({r[0]: float(r[1]) for r in rows})
             return [r[0] for r in rows]
         finally:
             await conn.close()
@@ -103,7 +103,7 @@ class HybridRetriever:
         finally:
             await conn.close()
 
-    async def _sparse(self, repo: str, query: str, k: int) -> list[str]:
+    async def _sparse(self, repo: str, query: str, k: int, scores: dict | None = None) -> list[str]:
         """BM25 词法通道: 惰性构建内存索引, 按 repo 缓存。"""
         if repo not in self._bm25:
             logger.info("构建 BM25 索引: %s", repo)
@@ -117,7 +117,10 @@ class HybridRetriever:
                 return []
             docs = [dict(id=r[0], text=r[1], source=r[2], path=r[3], meta=r[4], repo=repo) for r in rows]
             self._bm25[repo] = LexicalIndex(docs)
-        return [row["id"] for row in self._bm25[repo].search(query, k)]
+        results = self._bm25[repo].search(query, k)
+        if scores is not None:
+            scores.update({r["id"]: r["rerank_score"] for r in results})
+        return [row["id"] for row in results]
 
     async def _fetch(self, repo: str, ids: list[str]) -> list[dict]:
         conn = await self._conn()
@@ -134,17 +137,56 @@ class HybridRetriever:
         finally:
             await conn.close()
 
-    async def retrieve(self, query: str, repo: str, top_k: int = 8, rerank_pool: int = 50) -> list[dict]:
-        """混合检索主入口: 三通道并行 -> RRF -> rerank -> top_k。"""
+    async def retrieve(self, query: str, repo: str, top_k: int = 8, rerank_pool: int = 50,
+                       *, trace: dict | None = None) -> list[dict]:
+        """Retrieve with optional per-call diagnostics; never retain trace on the instance.
+
+        Trace contains identifiers/scores, not chunk contents. Channel positions refer
+        to the entire requested pool, not to the final top-k. Errors propagate.
+        """
+        start = perf_counter()
+        dense_scores, sparse_scores, timings = {}, {}, {}
+
+        async def timed(name, call):
+            t = perf_counter()
+            try:
+                return await call
+            finally:
+                timings[name] = perf_counter() - t
+
         exact_ids, dense_ids, sparse_ids = await asyncio.gather(
-            self._exact(repo, query, 20),
-            self._dense(repo, query, rerank_pool),
-            self._sparse(repo, query, rerank_pool),
+            timed("exact", self._exact(repo, query, 20)),
+            timed("dense", self._dense(repo, query, rerank_pool, dense_scores)
+                  if trace is not None else self._dense(repo, query, rerank_pool)),
+            timed("sparse", self._sparse(repo, query, rerank_pool, sparse_scores)
+                  if trace is not None else self._sparse(repo, query, rerank_pool)),
         )
-        fused = rrf_fuse([exact_ids, dense_ids, sparse_ids], k=RRF_K, top_n=rerank_pool)
-        if not fused:
-            return []
-        docs = deduplicate_docs(await self._fetch(repo, [doc_id for doc_id, _ in fused]))
+        t = perf_counter()
+        all_fused = rrf_fuse([exact_ids, dense_ids, sparse_ids], k=RRF_K)
+        fused = all_fused[:rerank_pool]
+        timings["fusion"] = perf_counter() - t
+        docs = deduplicate_docs(await self._fetch(repo, [i for i, _ in fused])) if fused else []
+        before = list(docs)
+        t = perf_counter()
         if self.reranker is not None:
             docs = self.reranker.rerank(query, docs)
-        return diversify(docs, top_k)
+        timings["rerank"] = perf_counter() - t
+        final = diversify(docs, top_k)
+        timings["total"] = perf_counter() - start
+        if trace is not None:
+            # Extra fetch is diagnostic I/O only; no second embedding/model prediction.
+            union = await self._fetch(repo, [i for i, _ in all_fused]) if all_fused else []
+            def brief(d):
+                return {key: d[key] for key in ("id", "repo", "path", "source", "meta", "rerank_score") if key in d}
+            trace.update(query=query, normalized_tokens=tokenize(query),
+                         exact_patterns=extract_error_strings(query), repo=repo,
+                         channels={"exact": exact_ids, "dense": dense_ids, "sparse": sparse_ids},
+                         dense_scores=dense_scores, bm25_scores=sparse_scores,
+                         fused=[{"id": i, "score": score} for i, score in all_fused],
+                         candidates=[brief(d) for d in union],
+                         before_rerank=[brief(d) for d in before],
+                         after_rerank=[brief(d) for d in docs],
+                         final=[brief(d) for d in final], timings=timings,
+                         limits={"exact": 20, "dense": rerank_pool, "sparse": rerank_pool,
+                                 "rerank_pool": rerank_pool, "top_k": top_k})
+        return final
