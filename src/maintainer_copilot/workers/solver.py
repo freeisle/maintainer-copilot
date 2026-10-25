@@ -65,7 +65,7 @@ def parse_citations(answer: str) -> list[int]:
 def merge_results(batches: list[list[dict]]) -> list[dict]:
     """合并多轮检索结果: 按 id 去重, 保留最高融合/rerank 分, 降序返回。"""
     def score(item):
-        return item.get("federation_score", item.get("rerank_score", 0))
+        return item.get("federation_score", item.get("ranking_score", item.get("rerank_score", 0)))
     merged: dict[str, dict] = {}
     for batch in batches:
         for item in batch:

@@ -241,3 +241,7 @@ PostgreSQL 补充验证提交：`2d15232`。
 第一阶段：`retrieve(trace=...)` 记录完整通道池、dense/BM25 分数、完整 RRF 联集、重排前后与覆盖结果、阶段耗时。诊断不二次计算 embedding，异常不伪装成空成功。`python -m eval.diagnose_retrieval --output <new.json>` 只允许固定行数的 mc_test_ 数据库，拒绝覆盖报告。`uv run pytest -q tests/test_retrieval_trace.py tests/test_rrf.py tests/test_lexical.py tests/test_pgvector.py` → 13 passed，包含真实 PostgreSQL 4 项，其余为单元测试。后续实验尚未验收，不修改完成状态。
 
 切分缺陷修复：Python 模块 docstring 未被 AST 主循环处理，ret-014 标注依据在源码中但不在固定快照；行窗回退缺少 part_idx 导致主键碰撞，dashboardService.ts 仅保留最后一段。不过其 getDashboardKbHitRate 仍在该尾段，不能将 ret-007 全部归因于语料丢失。补充模块说明 chunk 和回退分段标识，不改变既有方法 ID，不对固定库执行重建。`uv run pytest -q tests/test_chunkers.py tests/test_code_chunker.py` → 14 passed。源码生成审计见 eval/reports/retrieval-evidence-audit.json；这不是修复后的检索收益实验。历史旧索引需要未来独立迁移，不纳入同口径 E0–E3。
+
+诊断阶段提交 cb5c427；切分修复提交 ccbd9a0。新增 symbol_recall / coverage_pool / rank_blend 三个默认关闭开关；相同 50 候选预算内覆盖不同文档，符号通道不按语言/仓库/测试 ID 偏置，排名组合保留原始 CE 分并接入 Solver。新增策略/缓存/实库专项 13 passed（其中真实 PostgreSQL 5 项）；此前策略+Solver+联邦回归 22 passed。仅说明工程验证，质量收益待实际 E0–E3。
+
+评测缓存只复用同模型 revision、依赖版本、batch、查询及完整文本哈希的真实 CE 分数；修改内容/模型即失效。因双模型同时常驻使主机可用内存不足 1 GB，未完成 E0 试跑停止并保留缓存/日志，改为预先计算 24 个查询向量后释放 Embedding 模型再加载 Reranker。每个实验仍执行真实 PostgreSQL 检索；缓存回放耗时不能当成模型推理性能。

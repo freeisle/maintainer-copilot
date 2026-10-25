@@ -50,3 +50,44 @@ class LexicalIndex:
                       for s,terms in zip(scores,self.terms)]
         ranked = sorted(zip(self.rows, scores), key=lambda x: x[1], reverse=True)
         return [{**r, "rerank_score": float(s)} for r, s in ranked if s > 0][:top_k]
+
+
+def query_symbols(query: str) -> list[str]:
+    """Extract explicit code identifiers, not natural-language words or query IDs."""
+    words = re.findall(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*", query)
+    return list(dict.fromkeys(w for w in words if
+        "_" in w or "." in w or re.search(r"[a-z][A-Z]|[A-Z]{2}[a-z]", w)))
+
+
+def symbol_search(rows: list[dict], query: str, k: int) -> list[dict]:
+    """Literal, token-boundary symbol matches. No repository or language preference."""
+    symbols = query_symbols(query)
+    patterns = [(s, re.compile(r"(?<![A-Za-z0-9_])" + re.escape(s) + r"(?![A-Za-z0-9_])", re.I))
+                for s in symbols]
+    found = []
+    for row in rows:
+        text = row.get("path", "") + " " + row["text"]
+        matches = [s for s, pattern in patterns if pattern.search(text)]
+        if matches:
+            found.append({**row, "symbol_matches": matches})
+    return sorted(found, key=lambda d: (-len(d["symbol_matches"]), d["id"]))[:k]
+
+
+def blend_document_ranks(before: list[dict], after: list[dict], k: int = 10) -> list[dict]:
+    """Equal-weight rank evidence from fusion and CE; document-level, stable ties.
+
+    Raw model scores stay unchanged. Explicit ranking_score is consumed by Solver.
+    No absolute score thresholds, source-type boosts or query-specific rules.
+    """
+    def key(d):
+        return (d.get("repo"), d.get("source"),
+                d.get("meta", {}).get("issue") if d.get("source") == "issue" else d.get("path"))
+    def ranks(rows):
+        result = {}
+        for d in rows:
+            result.setdefault(key(d), len(result) + 1)
+        return result
+    first, second = ranks(before), ranks(after)
+    scored = [{**d, "ranking_score": 1 / (k + first[key(d)]) + 1 / (k + second[key(d)])}
+              for d in after]
+    return sorted(scored, key=lambda d: d["ranking_score"], reverse=True)

@@ -93,3 +93,25 @@ async def test_exact_channel_and_database_error_propagation(pg_database):
     with psycopg.connect(pg_database) as c:
         c.execute('ALTER TABLE chunks RENAME COLUMN embedding_unavailable TO embedding')
     assert await search._dense('a/b', 'needle', 5) == [chunk_id('a/b', chunk)]
+
+
+@pytest.mark.asyncio
+async def test_strategy_trace_real_database_isolation(pg_database):
+    index = Indexer(pg_database, Vectors())
+    await index.init_schema()
+    chunks = [Chunk("loadValue", "code", {"path": "impl.py", "part_idx": 0}),
+              Chunk("loadValue second", "code", {"path": "impl.py", "part_idx": 1}),
+              Chunk("loadValue", "code", {"path": "call.java"})]
+    await index.upsert_chunks("allowed/repo", chunks)
+    await index.upsert_chunks("private/repo", chunks)
+    r = HybridRetriever(pg_database, Vectors(), symbol_recall=True, coverage_pool=True)
+    r.reranker = None
+    trace = {}
+    result = await r.retrieve("loadValue", "allowed/repo", rerank_pool=2, trace=trace)
+    assert {x["path"] for x in result} == {"impl.py", "call.java"}
+    assert all(x["repo"] == "allowed/repo" for x in trace["candidates"])
+    assert len(trace["before_rerank"]) == 2
+    assert trace["symbol_matches"]
+    assert all(-1 <= v <= 1 for v in trace["dense_scores"].values())
+    assert trace["bm25_scores"]
+    assert await r._fetch("private/repo", [x["id"] for x in result]) == []

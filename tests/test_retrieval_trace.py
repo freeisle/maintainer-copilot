@@ -22,7 +22,7 @@ async def test_trace_preserves_results_and_full_pool():
     assert len(trace["before_rerank"]) == 2
     assert r._dense.await_count == 2  # one per call, not a second diagnostic embedding
     positions = relevant_positions(trace, {"c", "missing", "b"})
-    assert positions["c"]["lost_stage"] == "fusion_cutoff_or_dedup"
+    assert positions["c"]["lost_stage"] == "fusion_cutoff"
     assert positions["missing"]["lost_stage"] == "outside_requested_channel_pools"
     assert positions["b"]["lost_stage"] is None
 

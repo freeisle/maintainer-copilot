@@ -18,7 +18,7 @@ from .embedder import Embedder
 from .indexer import Vector
 from .query_rewriter import extract_error_strings
 from .reranker import Reranker
-from .lexical import LexicalIndex, diversify, tokenize
+from .lexical import LexicalIndex, diversify, tokenize, symbol_search, blend_document_ranks
 from .dedup import deduplicate_docs
 
 logger = logging.getLogger(__name__)
@@ -50,10 +50,14 @@ class HybridRetriever:
         database_url: str | None = None,
         embedder: Embedder | None = None,
         reranker: Reranker | None = None,
+        *, symbol_recall: bool = False, coverage_pool: bool = False, rank_blend: bool = False,
     ) -> None:
         self.database_url = database_url or get_settings().database_url
         self.embedder = embedder or Embedder()
         self.reranker = reranker or Reranker()
+        self.symbol_recall = symbol_recall
+        self.coverage_pool = coverage_pool
+        self.rank_blend = rank_blend
         self._bm25: dict[str, LexicalIndex] = {}
 
     async def _conn(self):
@@ -162,31 +166,50 @@ class HybridRetriever:
                   if trace is not None else self._sparse(repo, query, rerank_pool)),
         )
         t = perf_counter()
-        all_fused = rrf_fuse([exact_ids, dense_ids, sparse_ids], k=RRF_K)
+        channels = [exact_ids, dense_ids, sparse_ids]
+        symbol_rows = []
+        if self.symbol_recall and repo in self._bm25:
+            symbol_rows = symbol_search(self._bm25[repo].rows, query, 20)
+            channels.append([d["id"] for d in symbol_rows])
+        all_fused = rrf_fuse(channels, k=RRF_K)
         fused = all_fused[:rerank_pool]
         timings["fusion"] = perf_counter() - t
-        docs = deduplicate_docs(await self._fetch(repo, [i for i, _ in fused])) if fused else []
+        selected = await self._fetch(repo, [i for i, _ in fused]) if fused else []
+        docs = deduplicate_docs(selected)
+        if self.coverage_pool and all_fused:
+            # Same 50 CE budget; spend it on documents before sibling chunks.
+            selected = diversify(await self._fetch(repo, [i for i, _ in all_fused]), rerank_pool)
+            docs = selected
         before = list(docs)
         t = perf_counter()
         if self.reranker is not None:
             docs = self.reranker.rerank(query, docs)
         timings["rerank"] = perf_counter() - t
-        final = diversify(docs, top_k)
+        ranked = blend_document_ranks(before, docs) if self.rank_blend and self.reranker is not None else docs
+        final = diversify(ranked, top_k)
         timings["total"] = perf_counter() - start
         if trace is not None:
             # Extra fetch is diagnostic I/O only; no second embedding/model prediction.
             union = await self._fetch(repo, [i for i, _ in all_fused]) if all_fused else []
             def brief(d):
-                return {key: d[key] for key in ("id", "repo", "path", "source", "meta", "rerank_score") if key in d}
+                return {key: d[key] for key in ("id", "repo", "path", "source", "meta", "rerank_score", "ranking_score") if key in d}
+            def rank_entry(d):
+                return {key: d[key] for key in ("id", "rerank_score", "ranking_score") if key in d}
             trace.update(query=query, normalized_tokens=tokenize(query),
                          exact_patterns=extract_error_strings(query), repo=repo,
                          channels={"exact": exact_ids, "dense": dense_ids, "sparse": sparse_ids},
+                         symbol_matches={d["id"]: d["symbol_matches"] for d in symbol_rows},
+                         strategies=dict(symbol_recall=self.symbol_recall, coverage_pool=self.coverage_pool, rank_blend=self.rank_blend),
                          dense_scores=dense_scores, bm25_scores=sparse_scores,
                          fused=[{"id": i, "score": score} for i, score in all_fused],
                          candidates=[brief(d) for d in union],
-                         before_rerank=[brief(d) for d in before],
-                         after_rerank=[brief(d) for d in docs],
-                         final=[brief(d) for d in final], timings=timings,
+                         selected_pool=[rank_entry(d) for d in selected],
+                         before_rerank=[rank_entry(d) for d in before],
+                         after_rerank=[rank_entry(d) for d in docs],
+                         before_coverage=[rank_entry(d) for d in ranked],
+                         final=[rank_entry(d) for d in final], timings=timings,
                          limits={"exact": 20, "dense": rerank_pool, "sparse": rerank_pool,
                                  "rerank_pool": rerank_pool, "top_k": top_k})
+        if trace is not None and self.symbol_recall:
+            trace["channels"]["symbol"] = [d["id"] for d in symbol_rows]
         return final
