@@ -37,7 +37,12 @@ def pg_database():
         admin.execute('CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public')
         schema = 'pgvector_test_' + uuid.uuid4().hex
         admin.execute(sql.SQL('CREATE SCHEMA {}').format(sql.Identifier(schema)))
-    scoped = make_conninfo(url, options=f'-c search_path={schema},public -c statement_timeout=15000')
+    class RedactedConnection(str):
+        def __repr__(self):
+            return "<redacted PostgreSQL test connection>"
+
+    scoped = RedactedConnection(make_conninfo(
+        url, options=f'-c search_path={schema},public -c statement_timeout=15000'))
     try:
         yield scoped
     finally:

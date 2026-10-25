@@ -85,9 +85,11 @@ async def test_exact_channel_and_database_error_propagation(pg_database):
     search = HybridRetriever(pg_database, Vectors())
     assert await search._exact('a/b', chunk.text, 5) == [chunk_id('a/b', chunk)]
     with psycopg.connect(pg_database) as c:
-        c.execute('ALTER TABLE chunks RENAME TO chunks_unavailable')
-    with pytest.raises(psycopg.errors.UndefinedTable):
+        # Keep the scoped table in place: a missing table could resolve to
+        # public.chunks after the evaluation corpus has been prepared.
+        c.execute('ALTER TABLE chunks RENAME COLUMN embedding TO embedding_unavailable')
+    with pytest.raises(psycopg.errors.UndefinedColumn):
         await search._dense('a/b', 'needle', 5)
     with psycopg.connect(pg_database) as c:
-        c.execute('ALTER TABLE chunks_unavailable RENAME TO chunks')
+        c.execute('ALTER TABLE chunks RENAME COLUMN embedding_unavailable TO embedding')
     assert await search._dense('a/b', 'needle', 5) == [chunk_id('a/b', chunk)]
