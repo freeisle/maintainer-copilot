@@ -32,4 +32,3 @@ def memory_bytes():
 def local_revision(model):
     root = Path(os.environ.get("HF_HOME", str(Path.home() / ".cache/huggingface"))) / "hub"
     return (root / ("models--" + model.replace("/", "--")) / "refs/main").read_text().strip()
-

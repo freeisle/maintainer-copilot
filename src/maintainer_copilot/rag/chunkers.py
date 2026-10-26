@@ -158,10 +158,11 @@ class CodeChunker:
         chunks: list[Chunk] = []
         type_nodes = _TYPE_NODES[lang_name]
         method_nodes = _METHOD_NODES[lang_name]
-        for node in tree.root_node.named_children:
+        semantic_nodes = [n for n in tree.root_node.named_children if n.type != "comment"]
+        for node in semantic_nodes:
             # Python module documentation contains caller contracts and error clues.
             # It is outside function/type nodes and was silently discarded.
-            if (lang_name == "python" and node == tree.root_node.named_children[0]
+            if (lang_name == "python" and node == semantic_nodes[0]
                     and node.type == "expression_statement" and node.named_children
                     and node.named_children[0].type == "string"):
                 body = src[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
@@ -174,7 +175,8 @@ class CodeChunker:
                 chunks.extend(self._split_type(src, node, path, lang_name))
             elif node.type in method_nodes:
                 chunks.extend(self._split_method(src, node, path, "<module>", lang_name))
-        return chunks or self._fallback(text, path)
+        # A docstring alone must not suppress module constants/imports.
+        return chunks if any(c.meta.get("kind") != "module_doc" for c in chunks) else self._fallback(text, path)
 
     def _body_of(self, node: Any, lang_name: str):
         """类/接口声明的方法与字段在体节点(class_body/block)内部, 需先定位。"""

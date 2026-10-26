@@ -245,3 +245,12 @@ PostgreSQL 补充验证提交：`2d15232`。
 诊断阶段提交 cb5c427；切分修复提交 ccbd9a0。新增 symbol_recall / coverage_pool / rank_blend 三个默认关闭开关；相同 50 候选预算内覆盖不同文档，符号通道不按语言/仓库/测试 ID 偏置，排名组合保留原始 CE 分并接入 Solver。新增策略/缓存/实库专项 13 passed（其中真实 PostgreSQL 5 项）；此前策略+Solver+联邦回归 22 passed。仅说明工程验证，质量收益待实际 E0–E3。
 
 评测缓存只复用同模型 revision、依赖版本、batch、查询及完整文本哈希的真实 CE 分数；修改内容/模型即失效。因双模型同时常驻使主机可用内存不足 1 GB，未完成 E0 试跑停止并保留缓存/日志，改为预先计算 24 个查询向量后释放 Embedding 模型再加载 Reranker。每个实验仍执行真实 PostgreSQL 检索；缓存回放耗时不能当成模型推理性能。
+
+
+### 2026-10-26：续执行与复现边界补强
+
+续执行时无存活评测进程，仅留下 22/24 的 E0.partial.json，不计为完整实验；保留真实模型分数缓存和原始日志。先补齐模块说明之前有注释、仅包含模块说明与常量两种边界，防止切分修复遗漏配置。Reranker 拒绝分数缺失/NaN/Inf，模型 revision 显式固定且惰性实例只加载一次。主 eval.run_eval 从实际 trace 计算分通道命中，消除诊断阶段第二次 embedding；可用 --diagnostics 保存全池。
+
+冻结内部挑战集 retrieval-challenge：6 条，SHA256 760d27cf861e845e42c8a9e191b04ad75a6da85d2b18327ab705e9e8f9e5ce72，标签在 E1/E3 结果产生前逐项核对源码及固定快照证据。共享部分开发集文件，不能当作外部独立盲测。矩阵要求起始工作区干净并检查运行中源码哈希，拒绝漂移；后续从新输出目录完整运行，不覆盖历史报告。
+
+`uv run pytest -q` → 182 passed / 0 failed / 0 skipped，264.69 秒，1 条既有 Starlette/anyio 弃用警告；之后补充空文档键兼容测试，`uv run pytest -q tests/test_eval_trace.py tests/test_rerank_batch.py tests/test_chunkers.py tests/test_score_cache.py` → 22 passed。`compileall -q src eval tests` 通过。Java 模块未修改；全量中的实际 Java MCP 进程测试通过，不额外运行 Maven。源码审计确认 79 个文件旧回退主键碰撞、250 段被覆盖；新保留模块说明为 13 个，另外 3 个纯模块本来由整文回退覆盖，不计新增收益。

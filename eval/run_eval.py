@@ -244,6 +244,28 @@ async def run_tool_selection_suite(ablate: bool = False) -> dict:
     return report
 
 
+async def search_with_trace(retriever, queries: list[str], repo: str, k: int):
+    """Use the actual retrieval trace; never run diagnostic channels a second time."""
+    from maintainer_copilot.workers.solver import merge_results
+    batches, traces = [], []
+    for query in queries[:3]:
+        trace = {}
+        batches.append(await retriever.retrieve(query, repo, top_k=k, trace=trace))
+        traces.append(trace)
+    keys = list(dict.fromkeys(key for d in merge_results(batches)[:k] if (key := metrics.doc_key(d))))
+    return keys, traces
+
+
+def channel_hits_from_trace(trace: dict, relevant: set[str], k: int):
+    by_id = {d["id"]: metrics.doc_key(d) for d in trace["candidates"]}
+    hits = {}
+    for name in ("exact", "dense", "sparse"):
+        keys = list(dict.fromkeys(by_id[i] for i in trace["channels"][name][:k] if i in by_id))
+        hits[name] = bool(set(keys) & relevant)
+        hits[name + "_documents"] = keys
+    return hits
+
+
 async def run_retrieval_suite(
     limit: int = 0,
     k: int = 8,
@@ -252,6 +274,7 @@ async def run_retrieval_suite(
     check: bool = False,
     dataset: str = "retrieval",
     rerank_batch_size: int = 32,
+    diagnostics: bool = False,
 ) -> dict:
     """检索评测: 问题 -> 标注文档键的 hit@1/3/k + MRR + Recall + 分通道诊断。
 
@@ -276,40 +299,16 @@ async def run_retrieval_suite(
         retriever.reranker = None
     rewriter = QueryRewriter(ModelProvider()) if rewrite else None
 
-    async def _search(repo: str, question: str) -> list[str]:
-        """按线上口径检索, 返回去重的文档键列表(保持排名)。"""
+    async def _search(repo: str, question: str):
         queries = [question] + (await rewriter.rewrite(question) if rewriter else [])
-        batches = [await retriever.retrieve(q, repo, top_k=k) for q in queries[:3]]
-        keys: list[str] = []
-        for doc in merge_results(batches)[:k]:
-            key = metrics.doc_key(doc)
-            if key and key not in keys:
-                keys.append(key)
-        return keys
-
-    async def _channel_hits(repo: str, question: str, relevant: set[str]) -> dict:
-        """分通道命中诊断: exact/dense/sparse 各自 top-k 是否命中标注。"""
-        hits: dict = {}
-        for name, channel in (
-            ("exact", retriever._exact),
-            ("dense", retriever._dense),
-            ("sparse", retriever._sparse),
-        ):
-            try:
-                ids = await channel(repo, question, k)
-                docs = await retriever._fetch(repo, ids)
-                hits[name] = bool({metrics.doc_key(d) for d in docs} & relevant)
-                hits[name + "_documents"] = list(dict.fromkeys(metrics.doc_key(d) for d in docs))
-            except Exception as exc:  # noqa: BLE001 - 单通道故障不阻断整体评测
-                hits[name] = f"error: {type(exc).__name__}"
-        return hits
+        return await search_with_trace(retriever, queries, repo, k)
 
     per_item: list[dict] = []
     for i, item in enumerate(data, 1):
         repo = item["repo"]
         question = item["question"]
         relevant = set(item.get("relevant") or [])
-        retrieved = await _search(repo, question)
+        retrieved, traces = await _search(repo, question)
         if check:
             found = sorted(relevant & set(retrieved))
             missing = sorted(relevant - set(retrieved))
@@ -340,8 +339,10 @@ async def run_retrieval_suite(
             "mrr": metrics.mrr_at_k(relevant, retrieved, k=k),
             "recall": metrics.recall_at_k(relevant, retrieved, k=k),
             "recall@5": metrics.recall_at_k(relevant, retrieved, k=5),
-            "channel_hits": await _channel_hits(repo, question, relevant),
+            "channel_hits": channel_hits_from_trace(traces[0], relevant, k),
         }
+        if diagnostics:
+            record["diagnostics"] = traces
         per_item.append(record)
         logger.info(
             "[%d/%d] %s hit@%d=%s mrr=%.2f recall=%.2f channels=%s",
@@ -405,6 +406,7 @@ def main() -> None:
     parser.add_argument("--ablate", action="store_true", help="tool_selection: 模糊描述消融对照")
     parser.add_argument("--k", type=int, default=8, help="retrieval: hit@k/MRR/Recall 的截断位置")
     parser.add_argument("--no-rewrite", action="store_true", help="retrieval: 关闭 LLM 查询改写")
+    parser.add_argument("--diagnostics", action="store_true", help="retrieval: 保存完整候选池及排序诊断")
     parser.add_argument("--no-rerank", action="store_true", help="retrieval: 关闭 rerank(融合排序消融)")
     parser.add_argument("--rerank-batch-size", type=int, default=32, help="retrieval: 重排批大小，仅影响内存/吞吐")
     parser.add_argument("--check", action="store_true", help="retrieval: 仅校验标注是否存在于知识库")
@@ -433,6 +435,7 @@ def main() -> None:
                 check=args.check,
                 dataset=args.dataset,
                 rerank_batch_size=args.rerank_batch_size,
+                diagnostics=args.diagnostics,
             )
         )
         if args.check:

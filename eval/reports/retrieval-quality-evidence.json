@@ -1,0 +1,116 @@
+{
+  "snapshot_sha256": "d17e7ad54a4608e01e752b6d6cba97d1d445be6c6dc400062a6d2f7e1a65fafa",
+  "challenge_sha256": "760d27cf861e845e42c8a9e191b04ad75a6da85d2b18327ab705e9e8f9e5ce72",
+  "source_coverage": [
+    {
+      "repo": "ragent",
+      "revision": "1fdd99f6a6080b49e244133c998eb95159aa1749",
+      "fallback_collision_files": 71,
+      "old_lost_fallback_parts": 238,
+      "newly_preserved_module_doc_files": 0,
+      "examples": [
+        {
+          "path": "framework/src/main/java/com/nageoffer/ai/ragent/framework/validation/ChatQuestion.java",
+          "old_lost_parts": 1
+        },
+        {
+          "path": "frontend/@/components/ui/alert-dialog.tsx",
+          "old_lost_parts": 2
+        },
+        {
+          "path": "frontend/@/components/ui/button.tsx",
+          "old_lost_parts": 1
+        },
+        {
+          "path": "frontend/@/components/ui/card.tsx",
+          "old_lost_parts": 1
+        },
+        {
+          "path": "frontend/@/components/ui/form.tsx",
+          "old_lost_parts": 2
+        }
+      ]
+    },
+    {
+      "repo": "12306",
+      "revision": "5e00578a55e21eec3f33afb47ffaa69e1fa9a9e7",
+      "fallback_collision_files": 8,
+      "old_lost_fallback_parts": 12,
+      "newly_preserved_module_doc_files": 13,
+      "examples": [
+        {
+          "path": "console-vue/src/constants/index.js",
+          "old_lost_parts": 2
+        },
+        {
+          "path": "console-vue/src/router/index.js",
+          "old_lost_parts": 2
+        },
+        {
+          "path": "console-vue/src/service/index.js",
+          "old_lost_parts": 3
+        },
+        {
+          "path": "console-vue/vue.config.js",
+          "old_lost_parts": 1
+        },
+        {
+          "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/Idempotent.java",
+          "old_lost_parts": 1
+        }
+      ]
+    }
+  ],
+  "challenge_evidence": [
+    {
+      "id": "challenge-001",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/admin/service/impl/DashboardServiceImpl.java",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "be8568064ee315e11c3aa0187231e7e2e6c7b32019c40ea445c9ecb21aeddba2"
+    },
+    {
+      "id": "challenge-002",
+      "path": "ai-agent-py/app/tools/client.py",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "1dac264e21f23fc62019f25ff78056efa72179ecf23e8b9483ff7540c1927ab4"
+    },
+    {
+      "id": "challenge-003",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngine.java",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "82cd155e4203a2579ff555a4e79385e02561aaf801dc319c2a1f2245ef2bd8f0"
+    },
+    {
+      "id": "challenge-004",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/FetcherNode.java",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "d626d0e850e5541551dc7bdfe7104632ab7a7f9e6a7f6d3639ea27a452ce11de"
+    },
+    {
+      "id": "challenge-004",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/ParserNode.java",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "01b5ee802b60d4912c7662c3ec730dedf49c5ffe9f966372a0aac60dfcf4a519"
+    },
+    {
+      "id": "challenge-005",
+      "path": "issue#45",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "04630f8d20fd6e8c29167bff25a76f2a7138e3f0245c7766c91b9499c35b1473"
+    },
+    {
+      "id": "challenge-006",
+      "path": "frontend/src/services/dashboardService.ts",
+      "source_contains": true,
+      "snapshot_contains": true,
+      "source_sha256": "fc6cb3c8020dd322d6fa92f85c6df6fe544916d8555761de35931c444a5e5fe7"
+    }
+  ],
+  "note": "Read-only source-side audit. No index rebuild or retrieval-quality claim."
+}

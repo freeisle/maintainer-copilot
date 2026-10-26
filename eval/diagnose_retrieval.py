@@ -47,7 +47,7 @@ async def run(args, retriever=None):
     path = Path(args.output)
     if path.exists():
         raise FileExistsError(path)
-    dataset = Path("eval/datasets/retrieval-v2.jsonl")
+    dataset = Path("eval/datasets") / (getattr(args, "dataset", "retrieval-v2") + ".jsonl")
     data = [json.loads(line) for line in dataset.read_text(encoding="utf-8").splitlines() if line]
     if args.ids:
         data = [d for d in data if d["id"] in args.ids.split(",")]
@@ -78,6 +78,7 @@ async def run(args, retriever=None):
         await conn.close()
     report = dict(started_at=datetime.now().astimezone().isoformat(),
                   code_sha=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+                  dataset=dataset.stem, lock_sha256=hashlib.sha256(Path("uv.lock").read_bytes()).hexdigest(),
                   dataset_sha256=hashlib.sha256(dataset.read_bytes()).hexdigest(),
                   snapshot_sha256=hashlib.sha256(Path("data/retrieval-snapshot.jsonl").read_bytes()).hexdigest(),
                   database=database, corpus_rows=count, corpus_fingerprint=fingerprint,
@@ -134,6 +135,7 @@ def main():
     parser.add_argument("--output", required=True)
     parser.add_argument("--no-rerank", action="store_true")
     parser.add_argument("--ids")
+    parser.add_argument("--dataset", choices=["retrieval-v2", "retrieval-challenge"], default="retrieval-v2")
     parser.add_argument("--symbol-recall", action="store_true")
     parser.add_argument("--coverage-pool", action="store_true")
     parser.add_argument("--rank-blend", action="store_true")

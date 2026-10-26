@@ -105,3 +105,18 @@ def test_python_module_contract_is_preserved_with_methods():
     assert "RemoteFailure" in "".join(c.text for c in docs)
     assert any(c.meta.get("method") == "submit" for c in chunks)
     assert len({chunk_id("repo", c) for c in chunks}) == len(chunks)
+
+
+def test_module_doc_does_not_hide_constants_or_imports():
+    from maintainer_copilot.rag.chunkers import CodeChunker
+    source = '"""Configuration."""\nimport os\nTIMEOUT = 30\n'
+    chunks = CodeChunker().split(source, "config.py")
+    assert "".join(c.text for c in chunks) == source
+
+
+def test_module_doc_after_encoding_comment_is_preserved():
+    from maintainer_copilot.rag.chunkers import CodeChunker
+    source = '# coding: utf-8\n"""Caller contract."""\ndef call():\n    pass\n'
+    chunks = CodeChunker().split(source, "client.py")
+    assert any(c.meta.get("kind") == "module_doc" for c in chunks)
+    assert any(c.meta.get("method") == "call" for c in chunks)

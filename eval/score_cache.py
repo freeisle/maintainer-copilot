@@ -12,7 +12,7 @@ from maintainer_copilot.rag.reranker import Reranker
 
 class CachedReranker(Reranker):
     def __init__(self, cache_path, revision, batch_size=4):
-        super().__init__(batch_size=batch_size)
+        super().__init__(batch_size=batch_size, revision=revision)
         self.cache_path = Path(cache_path)
         self.signature = [self.model, revision, batch_size,
                           version("torch"), version("sentence-transformers")]

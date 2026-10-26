@@ -10,9 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class Embedder:
-    def __init__(self, provider: str = "local", model: str = "BAAI/bge-m3") -> None:
+    def __init__(self, provider: str = "local", model: str = "BAAI/bge-m3", *, revision: str | None = None) -> None:
         self.provider = provider
         self.model = model
+        self.revision = revision
         self._local = None
 
     def _load_local(self):
@@ -20,7 +21,7 @@ class Embedder:
             from sentence_transformers import SentenceTransformer  # 延迟导入: rag extra 才安装
 
             logger.info("加载本地 embedding 模型 %s (首次运行自动下载)...", self.model)
-            self._local = SentenceTransformer(self.model)
+            self._local = SentenceTransformer(self.model, **({"revision": self.revision} if self.revision else {}))
         return self._local
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
