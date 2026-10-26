@@ -1,0 +1,198 @@
+{
+  "code_sha": "675a91aa4b242b0debccfd69f23a431e3b78c036",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "samples": 2,
+  "repeats_per_configuration": 1,
+  "no_score_cache": true,
+  "query_vectors_precomputed": true,
+  "cold_embedding_load_seconds": 43.9546726999979,
+  "warm_query_encode_seconds": [
+    2.1362181000004057,
+    0.26838950000092154
+  ],
+  "cold_reranker_load_seconds": 8.24155040000187,
+  "embedding_phase_memory": {
+    "pid": 17676,
+    "rss": 2024185856,
+    "peak_rss": 2024259584,
+    "private_bytes": 3261497344
+  },
+  "model_revisions": {
+    "BAAI/bge-m3": "5617a9f61b028005a4858fdac845db406aefb181",
+    "BAAI/bge-reranker-v2-m3": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e"
+  },
+  "dataset_sha256": "db8404eafabb33495cc27a36f1531eba0a9037823b5e98ca4c65a90f9a33acea",
+  "model_max_length": 8192,
+  "model_dtype": "torch.float32",
+  "model_device": "cpu",
+  "rows": [
+    {
+      "id": "ret-009",
+      "batch_size": 4,
+      "pool": 20,
+      "timings": {
+        "exact": 0.00016649999452056363,
+        "sparse": 2.06481150000036,
+        "dense": 2.067579399998067,
+        "fusion": 0.00010019999899668619,
+        "rerank": 22.691861100000096,
+        "total": 24.828785400000925
+      },
+      "memory": {
+        "pid": 17676,
+        "rss": 3222503424,
+        "peak_rss": 3306229760,
+        "private_bytes": 3458822144
+      },
+      "candidates": 20,
+      "reference_comparison": {
+        "matched": 20,
+        "max_absolute_score_difference": 7.152557373046875e-07
+      }
+    },
+    {
+      "id": "ret-015",
+      "batch_size": 4,
+      "pool": 20,
+      "timings": {
+        "exact": 7.259999983943999e-05,
+        "dense": 0.0931741999957012,
+        "sparse": 0.4521268000025884,
+        "fusion": 4.949999856762588e-05,
+        "rerank": 41.67868819999421,
+        "total": 42.18983580000349
+      },
+      "memory": {
+        "pid": 17676,
+        "rss": 3233603584,
+        "peak_rss": 3342499840,
+        "private_bytes": 3469127680
+      },
+      "candidates": 20,
+      "reference_comparison": {
+        "matched": 20,
+        "max_absolute_score_difference": 6.854534149169922e-07
+      }
+    },
+    {
+      "id": "ret-009",
+      "batch_size": 1,
+      "pool": 20,
+      "timings": {
+        "exact": 5.5500000598840415e-05,
+        "sparse": 0.021856500003195833,
+        "dense": 0.16189640000084182,
+        "fusion": 9.320000390289351e-05,
+        "rerank": 20.462837400002172,
+        "total": 20.687426099997538
+      },
+      "memory": {
+        "pid": 17676,
+        "rss": 3219939328,
+        "peak_rss": 3342499840,
+        "private_bytes": 3489165312
+      },
+      "candidates": 20,
+      "reference_comparison": {
+        "matched": 20,
+        "max_absolute_score_difference": 1.1324882507324219e-06
+      }
+    },
+    {
+      "id": "ret-015",
+      "batch_size": 1,
+      "pool": 20,
+      "timings": {
+        "exact": 4.9200003559235483e-05,
+        "sparse": 0.008103799998934846,
+        "dense": 0.08791999999812106,
+        "fusion": 5.4299998737405986e-05,
+        "rerank": 38.16812850000133,
+        "total": 38.29449449999811
+      },
+      "memory": {
+        "pid": 17676,
+        "rss": 3175727104,
+        "peak_rss": 3342499840,
+        "private_bytes": 3447939072
+      },
+      "candidates": 20,
+      "reference_comparison": {
+        "matched": 20,
+        "max_absolute_score_difference": 1.1324882507324219e-06
+      }
+    },
+    {
+      "id": "ret-009",
+      "batch_size": 4,
+      "pool": 50,
+      "timings": {
+        "exact": 5.62999994144775e-05,
+        "sparse": 0.02702510000381153,
+        "dense": 0.18629840000357945,
+        "fusion": 0.00012509999942267314,
+        "rerank": 94.25387649999902,
+        "total": 94.5012435000026
+      },
+      "memory": {
+        "pid": 17676,
+        "rss": 3230375936,
+        "peak_rss": 3349917696,
+        "private_bytes": 3506253824
+      },
+      "candidates": 50,
+      "reference_comparison": {
+        "matched": 50,
+        "max_absolute_score_difference": 0.0
+      }
+    },
+    {
+      "id": "ret-015",
+      "batch_size": 4,
+      "pool": 50,
+      "timings": {
+        "exact": 9.819999831961468e-05,
+        "sparse": 0.017547700001159683,
+        "dense": 0.14799610000045504,
+        "fusion": 0.0003035000045201741,
+        "rerank": 199.67235689999507,
+        "total": 199.899270599999
+      },
+      "memory": {
+        "pid": 17676,
+        "rss": 3219234816,
+        "peak_rss": 3351654400,
+        "private_bytes": 3507580928
+      },
+      "candidates": 50,
+      "reference_comparison": {
+        "matched": 50,
+        "max_absolute_score_difference": 0.0
+      }
+    }
+  ],
+  "summary": [
+    {
+      "batch_size": 4,
+      "pool": 20,
+      "n": 2,
+      "p50": 33.50931060000221,
+      "p95_nearest_rank": 42.18983580000349
+    },
+    {
+      "batch_size": 1,
+      "pool": 20,
+      "n": 2,
+      "p50": 29.490960299997823,
+      "p95_nearest_rank": 38.29449449999811
+    },
+    {
+      "batch_size": 4,
+      "pool": 50,
+      "n": 2,
+      "p50": 147.2002570500008,
+      "p95_nearest_rank": 199.899270599999
+    }
+  ],
+  "limitations": "Two queries, one repetition per config; P95 is the maximum of two values. Peak RSS is process lifetime cumulative, not a per-batch isolated peak. First repo query includes BM25 initialization. Encoding measured separately; total is SQL+lexical+CE with precomputed query vectors. No load-test or batch32 claim."
+}

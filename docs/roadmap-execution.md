@@ -254,3 +254,19 @@ PostgreSQL 补充验证提交：`2d15232`。
 冻结内部挑战集 retrieval-challenge：6 条，SHA256 760d27cf861e845e42c8a9e191b04ad75a6da85d2b18327ab705e9e8f9e5ce72，标签在 E1/E3 结果产生前逐项核对源码及固定快照证据。共享部分开发集文件，不能当作外部独立盲测。矩阵要求起始工作区干净并检查运行中源码哈希，拒绝漂移；后续从新输出目录完整运行，不覆盖历史报告。
 
 `uv run pytest -q` → 182 passed / 0 failed / 0 skipped，264.69 秒，1 条既有 Starlette/anyio 弃用警告；之后补充空文档键兼容测试，`uv run pytest -q tests/test_eval_trace.py tests/test_rerank_batch.py tests/test_chunkers.py tests/test_score_cache.py` → 22 passed。`compileall -q src eval tests` 通过。Java 模块未修改；全量中的实际 Java MCP 进程测试通过，不额外运行 Maven。源码审计确认 79 个文件旧回退主键碰撞、250 段被覆盖；新保留模块说明为 13 个，另外 3 个纯模块本来由整文回退覆盖，不计新增收益。
+
+### 2026-10-26：完整实验与最终回归
+
+代码固定675a91aa4b242b0debccfd69f23a431e3b78c036，六组主实验各24/24、挑战集两组各6/6，无查询跳过。每组干净启动、源码/数据库/语料/数据集/模型检查通过。E0最终文档顺序与上一轮有CE报告24/24一致；E1=符号+覆盖、E2=排名组合、E3=全部，另外独立运行符号和覆盖消融。E1只改善ret-003首个命中却丢失另一相关文档；E3找回ret-004第6位但仅1/7节点，ret-023/024等退化。新策略默认关闭，所有正负变化详见 eval/reports/retrieval-quality-v2.md 及 quality-20261026 结构化报告。
+
+实际命令：
+```powershell
+uv run python -u -m eval.retrieval_experiments --output-dir data/quality-matrix-final --score-cache data/retrieval-real-scores.json --experiments E0,E1,E2,E3,E1-symbol,E1-coverage
+uv run python -u -m eval.retrieval_experiments --dataset retrieval-challenge --experiments E0,E3 --output-dir data/quality-challenge-final --score-cache data/retrieval-real-scores.json
+uv run python -u -m eval.profile_retrieval --output data/quality-performance.json --reference-cache data/retrieval-real-scores.json
+uv run pytest -q
+```
+
+环境使用 MC_TEST_DATABASE_URL（不记录凭据）、HF/Transformers offline、OMP/MKL=4；Python回归使用JDK21。最终回归183 passed / 0 failed / 0 skipped，245.93秒，1条既有Starlette/anyio弃用警告；9项真实PG与实际Java MCP测试包含其中，Java未改不另跑Maven。原业务库7198行和隔离评测6349行完整摘要未变；原24题与快照SHA256未漂移。性能是2题各配置1次的无CE缓存测量，数值和限制写入最终质量报告，不把实验缓存回放耗时当作推理加速。
+
+阶段提交 cb5c427、ccbd9a0、bd28321、675a91a；报告与Roadmap为后续独立文档提交。没有重建或清理原库，没有执行E4，没有将旧向量缺少逐行模型来源的问题视为已解决。连接文件、语料副本、模型权重、评分缓存和原始日志均留在 ignored data/，不推送。

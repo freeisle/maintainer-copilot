@@ -1,0 +1,16 @@
+{
+  "original": {
+    "rows": 7198,
+    "fingerprint": "d027f83a162fb83b56522a103e599384"
+  },
+  "evaluation": {
+    "rows": 6349,
+    "fingerprint": "193f42dc5c5d302242a385727b3fcbfc"
+  },
+  "original_unchanged": true,
+  "evaluation_unchanged": true,
+  "hashes": {
+    "eval/datasets/retrieval-v2.jsonl": "db8404eafabb33495cc27a36f1531eba0a9037823b5e98ca4c65a90f9a33acea",
+    "data/retrieval-snapshot.jsonl": "d17e7ad54a4608e01e752b6d6cba97d1d445be6c6dc400062a6d2f7e1a65fafa"
+  }
+}

@@ -21,3 +21,12 @@
 - [ ] Langfuse 自托管：已接入 Solver/LLM OTLP trace、评测 scores、本地脱敏审计及固定版本部署准备脚本；14 项相关测试通过（真实本地 HTTP 接收）。Langfuse 存储/UI 与全镜像锁定尚未验证，保留未完成（本轮仅验证远端 pgvector 容器，不代表 Langfuse 已部署）。
 - [x] 多仓库联邦检索与跨仓库知识复用：显式配置关联范围，限定并发/超时，repo 级引用与 ID 隔离，接入 Solver；真实快照双仓库调用及错误路径通过。
 - [x] Java 工具服务模块：Spring Boot 3.5.7 / Spring AI 1.1 的只读 POM 检查服务；Python MCP 客户端真实 TCP 调用、XML 安全拒绝和连接失败验证通过，Java 3 项 + Python 1 项测试。
+
+## 2026-10-26：检索质量实验验收
+
+- [x] 全链路失败归因：完整通道池、RRF 联集、CE 前后及最终覆盖阶段均可追踪；ret-004/007/014 与部分召回题的证据见 [质量报告](../eval/reports/retrieval-quality-v2.md)。
+- [x] 可关闭优化与同口径消融：E0/E1/E2/E3、symbol/coverage 单独消融均完成真实 PostgreSQL n=24；固定6349条语料及原标签不变。E1 Hit@3=0.8333但 Recall@8 下降；E3 Hit@8=0.9167、Recall@8=0.7976、MRR@8=0.6806。因有查询退化，三个新开关继续默认关闭。
+- [x] 冻结内部挑战集：6条源码核验标签，E0/E3实际完成；E3 Hit@8=0.8333、MRR@8=0.6944。样本少且共享部分文件，不代表独立外部泛化验收。
+- [ ] 剩余语义缺口：ret-004仅覆盖1/7节点；ret-007/014仍未最终命中。未来入库切分缺陷已修复，但固定索引未重建，旧索引迁移及质量收益仍待独立验证。
+
+完整 Python 回归183 passed / 0 failed / 0 skipped，含9项真实 PostgreSQL 测试。原业务7198行完整摘要未变。上述实验完成不等于质量缺陷全部解决，也不改变历史清理、Skill、Langfuse及业务训练的未完成状态。复现与回滚见 [RAG评测说明](rag-evaluation.md)。
