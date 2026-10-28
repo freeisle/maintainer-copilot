@@ -72,15 +72,16 @@ async def run(args, retriever=None):
         cur = await conn.execute("SELECT current_database(), count(*), "
                                 "md5(string_agg(md5(to_jsonb(chunks)::text),'' ORDER BY id)) FROM chunks")
         database, count, fingerprint = await cur.fetchone()
-        if not database.startswith("mc_test_") or count != 6349:
-            raise ValueError("Expected isolated fixed 6349-row evaluation database")
+        expected_rows = getattr(args, 'expected_rows', 6349)
+        if not database.startswith("mc_test_") or count != expected_rows:
+            raise ValueError("Expected isolated evaluation database and verified generation size")
     finally:
         await conn.close()
     report = dict(started_at=datetime.now().astimezone().isoformat(),
                   code_sha=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                   dataset=dataset.stem, lock_sha256=hashlib.sha256(Path("uv.lock").read_bytes()).hexdigest(),
                   dataset_sha256=hashlib.sha256(dataset.read_bytes()).hexdigest(),
-                  snapshot_sha256=hashlib.sha256(Path("data/retrieval-snapshot.jsonl").read_bytes()).hexdigest(),
+                  snapshot_sha256=hashlib.sha256(Path(getattr(args,'snapshot','data/retrieval-snapshot.jsonl')).read_bytes()).hexdigest(),
                   database=database, corpus_rows=count, corpus_fingerprint=fingerprint,
                   rerank=not args.no_rerank, rewrite=False, batch_size=4, items=[],
                   strategies=dict(symbol_recall=args.symbol_recall, coverage_pool=args.coverage_pool,
@@ -141,6 +142,8 @@ def main():
     parser.add_argument("--rank-blend", action="store_true")
     parser.add_argument("--score-cache")
     parser.add_argument("--reranker-revision", default="953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e")
+    parser.add_argument("--expected-rows", type=int, default=6349)
+    parser.add_argument("--snapshot", default="data/retrieval-snapshot.jsonl")
     args = parser.parse_args()
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

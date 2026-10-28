@@ -87,6 +87,11 @@ def test_real_generations_update_delete_reuse_switch_and_query(versions):
     asyncio.run(switching_query())
     result=v.build('v3',docs,SPEC,'chunker1',e,reuse_from='v1')
     assert result['reused']==2 and result['embedded']==0
+    with v.connect() as c:
+        times=[]
+        for name in ('v1','v3'):
+            times.append(c.execute(sql.SQL('SELECT embedded_at FROM {}.chunks ORDER BY id').format(sql.Identifier(v.get(name)['schema']))).fetchall())
+        assert times[0]==times[1]
     result=v.build('v4',docs,SPEC,'chunker2',e,reuse_from='v1')
     assert result['reused']==0 and result['embedded']==2
     changed=replace(SPEC,revision='b'*40);e.revision=changed.revision
@@ -128,6 +133,32 @@ def test_real_partial_batch_rolls_back_all_rows(versions):
     with versions.connect() as c:
         n=c.execute(sql.SQL('SELECT count(*) FROM {}.chunks').format(sql.Identifier(versions.get('atomic')['schema']))).fetchone()[0]
         assert n==0
+
+
+def test_real_process_exit_between_batches_is_resumable(versions):
+    import os
+    import subprocess
+    import sys
+    v=versions;v.migrate()
+    program='''
+import os
+from maintainer_copilot.rag.versions import *
+from maintainer_copilot.rag.chunkers import Chunk
+class E:
+ model='test-model'
+ revision='a'*40
+ def embed_documents(self,texts):return [[1.]+[0.]*1023 for _ in texts]
+docs=[SourceDocument('a/b',p,'code','needle',[Chunk('needle','code',{'path':p})]) for p in ['1.py','2.py']]
+v=IndexVersions(os.environ['MC_CHILD_DB'],os.environ['MC_CHILD_REGISTRY'])
+v.build('killed',docs,ModelSpec('test-model','a'*40,runtime='deterministic-test-vectors-not-quality'),'c',E(),batch_size=1,after_batch=lambda b:os._exit(17))
+'''
+    env=dict(os.environ,MC_CHILD_DB=str(v.url),MC_CHILD_REGISTRY=v.registry)
+    result=subprocess.run([sys.executable,'-c',program],env=env,capture_output=True,timeout=30)
+    assert result.returncode==17
+    assert v.get('killed')['status']=='building'
+    with pytest.raises(ValueError):v.scoped_url('killed')
+    report=v.build('killed',[doc(path='1.py'),doc(path='2.py')],SPEC,'c',Encoder(),batch_size=1)
+    assert report['resumed']==1 and report['embedded']==1
 
 
 @pytest.mark.parametrize('mode',['dimension','count','model','nan'])

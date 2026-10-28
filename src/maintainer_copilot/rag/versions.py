@@ -192,6 +192,7 @@ class IndexVersions:
                           (d.key,d.repo,d.source,d.path,digest(d.text),d.commit,len(d.chunks)))
         start=perf_counter()
         stats=dict(documents=len(docs),chunks=len(rows),embedded=0,reused=0,resumed=0,
+                   reuse_source=reuse_from,
                    embedding_seconds=0.,write_seconds=0.,committed_batches=0,
                    empty_chunks=0,identity_duplicates=0,dimension_errors=0,failures=0)
         current=[]
@@ -207,14 +208,16 @@ class IndexVersions:
                         stats['resumed']+=len(current)
                         continue
                 vectors={}
+                vector_dates={}
                 if reuse_from:
                     old=self.get(reuse_from)
                     if old['status']=='ready' and old['config'].get('chunker_version')==chunker_version:
                         with self.connect() as c:
                             register_vector(c)
-                            found=c.execute(sql.SQL('SELECT id,chunk_content_hash,embedding FROM {}.chunks WHERE id=ANY(%s)').format(sql.Identifier(old['schema'])),([r[0] for r in current],)).fetchall() if old['config'].get('model',{}).get('revision') else []
+                            found=c.execute(sql.SQL('SELECT id,chunk_content_hash,embedding,embedded_at FROM {}.chunks WHERE id=ANY(%s)').format(sql.Identifier(old['schema'])),([r[0] for r in current],)).fetchall() if old['config'].get('model',{}).get('revision') else []
                         wanted={r[0]:r[3] for r in current}
-                        vectors={cid:v.to_list() if hasattr(v,'to_list') else v for cid,h,v in found if v is not None and reusable(old['config']['model'],model,h,wanted[cid])}
+                        vectors={cid:v.to_list() if hasattr(v,'to_list') else v for cid,h,v,at in found if v is not None and at is not None and reusable(old['config']['model'],model,h,wanted[cid])}
+                        vector_dates={cid:at for cid,h,v,at in found if cid in vectors}
                 missing=[r for r in current if r[0] not in vectors]
                 tick=perf_counter()
                 encoded=embedder.embed_documents([r[2].text for r in missing]) if missing else []
@@ -234,7 +237,7 @@ class IndexVersions:
                         if before_write:
                             before_write(batch,i,c)
                         c.execute('INSERT INTO chunks(id,repo,source,path,content,meta,content_hash,commit_sha,embedding,document_key,chunk_content_hash,embedded_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-                                  (cid,d.repo,d.source,d.path,ch.text,canonical(ch.meta),content_hash(ch.text),d.commit,Vector(vectors[cid]),d.key,h,datetime.now(timezone.utc)))
+                                  (cid,d.repo,d.source,d.path,ch.text,canonical(ch.meta),content_hash(ch.text),d.commit,Vector(vectors[cid]),d.key,h,vector_dates.get(cid,datetime.now(timezone.utc))))
                     c.execute('INSERT INTO completed_batches VALUES (%s,%s)',(batch,canonical([r[0] for r in current])))
                 stats['write_seconds']+=perf_counter()-tick
                 stats['embedded']+=len(missing);stats['reused']+=len(current)-len(missing)

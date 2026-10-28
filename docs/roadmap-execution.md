@@ -282,3 +282,9 @@ uv run pytest -q
 新增专项 `uv run pytest -q tests/test_index_versions.py` →8 passed（1项纯复用规则单元、7项真实PostgreSQL，确定性向量验证SQL而非模型质量）。覆盖重复迁移/构建、文档更新与删除、revision/切分器变更、批次SQL失败回滚、提交后中断恢复、未知历史拒绝复用、仓库隔离、真实查询切换回滚及模型/维度/数量/NaN失败。开发中发现向量适配注册与返回类型问题及重复加锁等待，均修复后重新运行通过。
 
 构建CLI直接读取固定Git blob与Issue导出，计划1505源文档/6640分段，旧6349分段对照新增300、移除9、同ID变化79。`uv run pytest -q tests/test_index_versions.py tests/test_pgvector.py tests/test_dedup_postgres.py` →18 passed，15.94秒（1单元+17真实PG）。新增批次内部第二条写入失败断言，确认首条也回滚；compileall与diff检查通过。重建将固定BGE-M3 commit，实际CPU/float32/max_seq_length=8192不符即拒绝；不复用来源未知的历史向量。
+
+完整回归 `uv run pytest -q` →193 passed / 0 failed / 0 skipped，425.29秒，1条既有Starlette/anyio弃用警告。明确的真实PostgreSQL专项18项（版本生命周期9+既有向量5+去重4），另1项复用规则单元测试；确定性测试向量不作为模型质量证据。独立子进程在首批commit后os._exit(17)，状态保持building、不可查询，重新运行只处理剩余批次，通过。复用时保留原embedded_at并记录来源版本，避免把复制时间伪装成向量生成时间。
+
+完整重建实际启动，固定BGE-M3 commit/CPU/float32/max_seq_length=8192。在独立mc_idx_ schema提交17批68条真实向量（均1024维、ID唯一），但主机内存达到96%、可用0.51GiB并明显换页，停止本轮模型以免OOM；保留原批次和building状态，不标ready。停止后可用约2.07GiB，需释放内存或提供独立执行节点后按原版本/原输入恢复。并行回归也停止后顺序重跑，以上193是完整顺序运行结果，不使用中断运行充数。原评测6349行完整复制为legacy-v1（revision/model来源仍未知），副本摘要与原表一致，测试指针仍为legacy-v1。
+
+新增R0/R1/R2入口eval.rebuild_regression，默认排序和E3开关继续独立，按代际核验行数与实际快照，不放宽旧工具默认6349约束。未完成全量代际，故本轮R0/R1/R2均未执行，不把上轮指标写成本轮复现。源审计发现旧记录的Git ref与旧快照并不完全匹配：重跑旧切分器得到同为6349行，但local retriever.py有6段内容差异及9个位置ID变化；新输入使用明确Git blob并披露这一差异。新计划6640=旧6349+300新增-9移除；新增包括250个回退分段、41个模块说明、9个方法ID，79个相同ID内容变化为旧回退尾段覆盖改成首段。源侧目标覆盖不等于向量已入库，更不等于检索命中。
