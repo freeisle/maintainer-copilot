@@ -280,3 +280,5 @@ uv run pytest -q
 版本模型：registry内versions保存模型名/精确commit/dimension/runtime、chunker哈希、输入清单哈希、状态和报告；每代documents保存源SHA256/仓库/路径/commit；chunks复用原读结构并增加文档外键、全文SHA256与embedded_at。未知历史revision保留null，只有模型配置、内容哈希与切分器版本完全匹配才复用。版本化Retriever每次查询固定一个代际，BM25缓存按代隔离；默认三个排序策略仍关闭。
 
 新增专项 `uv run pytest -q tests/test_index_versions.py` →8 passed（1项纯复用规则单元、7项真实PostgreSQL，确定性向量验证SQL而非模型质量）。覆盖重复迁移/构建、文档更新与删除、revision/切分器变更、批次SQL失败回滚、提交后中断恢复、未知历史拒绝复用、仓库隔离、真实查询切换回滚及模型/维度/数量/NaN失败。开发中发现向量适配注册与返回类型问题及重复加锁等待，均修复后重新运行通过。
+
+构建CLI直接读取固定Git blob与Issue导出，计划1505源文档/6640分段，旧6349分段对照新增300、移除9、同ID变化79。`uv run pytest -q tests/test_index_versions.py tests/test_pgvector.py tests/test_dedup_postgres.py` →18 passed，15.94秒（1单元+17真实PG）。新增批次内部第二条写入失败断言，确认首条也回滚；compileall与diff检查通过。重建将固定BGE-M3 commit，实际CPU/float32/max_seq_length=8192不符即拒绝；不复用来源未知的历史向量。

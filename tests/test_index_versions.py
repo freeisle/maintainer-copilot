@@ -120,6 +120,16 @@ def test_real_batch_rollback_resume_and_old_index_survives(versions):
     assert v.build('interrupted',docs,SPEC,'c',e,batch_size=1)['resumed']==1
 
 
+def test_real_partial_batch_rolls_back_all_rows(versions):
+    def fail(batch,i,c):
+        if i==1:c.execute('SELECT 1/0')
+    with pytest.raises(psycopg.errors.DivisionByZero):
+        versions.build('atomic',[doc(path='1.py'),doc(path='2.py')],SPEC,'c',Encoder(),batch_size=2,before_write=fail)
+    with versions.connect() as c:
+        n=c.execute(sql.SQL('SELECT count(*) FROM {}.chunks').format(sql.Identifier(versions.get('atomic')['schema']))).fetchone()[0]
+        assert n==0
+
+
 @pytest.mark.parametrize('mode',['dimension','count','model','nan'])
 def test_real_bad_embeddings_never_ready(versions,mode):
     class Bad(Encoder):
