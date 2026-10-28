@@ -270,3 +270,13 @@ uv run pytest -q
 环境使用 MC_TEST_DATABASE_URL（不记录凭据）、HF/Transformers offline、OMP/MKL=4；Python回归使用JDK21。最终回归183 passed / 0 failed / 0 skipped，245.93秒，1条既有Starlette/anyio弃用警告；9项真实PG与实际Java MCP测试包含其中，Java未改不另跑Maven。原业务库7198行和隔离评测6349行完整摘要未变；原24题与快照SHA256未漂移。性能是2题各配置1次的无CE缓存测量，数值和限制写入最终质量报告，不把实验缓存回放耗时当作推理加速。
 
 阶段提交 cb5c427、ccbd9a0、bd28321、675a91a；报告与Roadmap为后续独立文档提交。没有重建或清理原库，没有执行E4，没有将旧向量缺少逐行模型来源的问题视为已解决。连接文件、语料副本、模型权重、评分缓存和原始日志均留在 ignored data/，不推送。
+
+## 2026-10-28：索引版本与重建阶段
+
+起点ed48041，本地/远端一致且工作区干净。只读核验原库7198行摘要d027f83a162fb83b56522a103e599384、隔离评测库6349行摘要193f42dc5c5d302242a385727b3fcbfc均未变。PostgreSQL16.15/pgvector0.8.6可达，源Git对象、Issue导出和两模型本地缓存可用。
+
+确认缺陷：旧Indexer仅用截断内容哈希决定复用，缺少模型revision/运行配置判断；旧全量upsert不清理已删除分段；update_kb先逐路径提交删除再计算/插入，中途失败可留下缺口。潜在风险：逻辑位置含行号使移动导致ID变化；旧向量来源未知；旧增量脚本读取工作树而非目标revision。新版本路径采用完整源清单、不可变schema、批次原子提交与完成标记、完成校验、带比较条件的原子指针切换。旧公共表和默认检索配置不自动迁移。
+
+版本模型：registry内versions保存模型名/精确commit/dimension/runtime、chunker哈希、输入清单哈希、状态和报告；每代documents保存源SHA256/仓库/路径/commit；chunks复用原读结构并增加文档外键、全文SHA256与embedded_at。未知历史revision保留null，只有模型配置、内容哈希与切分器版本完全匹配才复用。版本化Retriever每次查询固定一个代际，BM25缓存按代隔离；默认三个排序策略仍关闭。
+
+新增专项 `uv run pytest -q tests/test_index_versions.py` →8 passed（1项纯复用规则单元、7项真实PostgreSQL，确定性向量验证SQL而非模型质量）。覆盖重复迁移/构建、文档更新与删除、revision/切分器变更、批次SQL失败回滚、提交后中断恢复、未知历史拒绝复用、仓库隔离、真实查询切换回滚及模型/维度/数量/NaN失败。开发中发现向量适配注册与返回类型问题及重复加锁等待，均修复后重新运行通过。
