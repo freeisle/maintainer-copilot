@@ -1,0 +1,31 @@
+{
+  "version": "rebuild-v2",
+  "status": "building",
+  "expected": 6640,
+  "written": 68,
+  "vectors": 68,
+  "min_dimension": 1024,
+  "max_dimension": 1024,
+  "distinct_ids": 68,
+  "touched_documents": 12,
+  "committed_batches": 17,
+  "last_committed_batch": 16,
+  "storage_bytes": 1138688,
+  "active": "legacy-v1",
+  "config": {
+    "model": {
+      "model": "BAAI/bge-m3",
+      "runtime": "{\"device\":\"cpu\",\"lock_sha256\":\"8b75c4fa96a0e703984581a9169168a116edf4a3c5ad7bb0fa67ee0c45f92b22\",\"max_seq_length\":8192,\"normalize_embeddings\":true,\"precision\":\"float32\",\"sentence_transformers\":\"6.0.1\",\"torch\":\"2.14.0\",\"transformers\":\"5.17.0\"}",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "dimension": 1024,
+      "normalized": true
+    },
+    "batch_size": 4,
+    "chunker_version": "1b964786cc73314d065e5594316d8d7842e6f0ff9beaa5a7dda19d2bebf234a3",
+    "identity_version": "logical-location-v1"
+  },
+  "complete": false,
+  "blocker": "Host memory 96%, available 0.51 GiB while model active; stopped own process to avoid sustained paging/OOM",
+  "audited_with_code_sha": "eb7abca634b53b0e77e8d4e8f38744d19eb37dab",
+  "build_started_with_code_sha": "892ea7ce571afaa4ff2d13b3b06dc2b9d46220a2"
+}

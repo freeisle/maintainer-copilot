@@ -1,0 +1,19 @@
+{
+  "client_date": "2026-10-28",
+  "complete": false,
+  "code_sha": "eb7abca634b53b0e77e8d4e8f38744d19eb37dab",
+  "tests": {
+    "command": "uv run pytest -q",
+    "passed": 193,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 425.29,
+    "real_postgres": 18
+  },
+  "retrieval": {
+    "R0": "not executed",
+    "R1": "blocked: incomplete index and host memory",
+    "R2": "blocked: incomplete index and host memory"
+  },
+  "original_data_unchanged": true
+}

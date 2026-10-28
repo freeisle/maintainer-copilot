@@ -1,0 +1,2828 @@
+{
+  "source_revisions": {
+    "freeisle/ragent": "1fdd99f6a6080b49e244133c998eb95159aa1749",
+    "freeisle/12306": "5e00578a55e21eec3f33afb47ffaa69e1fa9a9e7",
+    "local/maintainer-copilot": "384a302435bd88d6d9abe0d9476aac98f6448c5c"
+  },
+  "source_documents": 1505,
+  "planned_chunks": 6640,
+  "empty_chunks": 0,
+  "identity_duplicates": 0,
+  "per_repo": [
+    {
+      "repo": "freeisle/12306",
+      "documents": 483,
+      "chunks": 1564
+    },
+    {
+      "repo": "freeisle/ragent",
+      "documents": 984,
+      "chunks": 4849
+    },
+    {
+      "repo": "local/maintainer-copilot",
+      "documents": 38,
+      "chunks": 227
+    }
+  ],
+  "differences": {
+    "removed": 9,
+    "changed": 79,
+    "added": 300
+  },
+  "changes": [
+    {
+      "id": "00d7a13ca9b2d7f7",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "011d7ffa7f14acb7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/ChatPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "024ae67f4e492d7e",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/api.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "03c4ae21bdb9a260",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/table.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "055aad0e073d4edb",
+      "repo": "freeisle/12306",
+      "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/RestAPIIdempotent.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "056afc869f6dc369",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/traceUtils.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "059149f815ed41e3",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/dto/CompletionPayload.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "068e5cb07b452b4e",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "073f29f831942ab0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0762b2eaaaf57d3d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "07731c19b8d04855",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "07b8ec23b80f60e7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/ChatPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "07c916b8d8335ec9",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/graph/route.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "0a200700bdd71681",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0a6789a9815dbc86",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/form.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "0a86850b396b256c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0ac9c13e09b11d1f",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/config.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "0b46d99474b207e0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0c2a7b000e01206d",
+      "repo": "freeisle/12306",
+      "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/MQIdempotent.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0c35ff16c3c4dd32",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/ragTraceService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "0d6b6d5544e32afd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0d87e5fd3cbb238d",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/service/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0e9d5a81ce3e052f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0f03a6e9bb2a5952",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "0fb5591448644f43",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "1077f3ef7bfbd078",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/DocPreviewPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "107b61af40668b23",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/workers/reviewer.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "10f9c8e5f45d85b5",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/agent/AgentChatInput.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "1114396afadea03f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "11d5380f4f540957",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "11d74d034ad19c93",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "12364e8e9ac23fc7",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/tools/mcp_server.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "12746b5bb1fdbb4b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/agentProfileService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "1292abe05e9579b5",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/graph/executor.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "130572ef7d81caee",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "131342f28f5a5692",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/LoginPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "134aaf0d700b7643",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "15475525b61fc525",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/traceUtils.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "1617a4a48d837a2e",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/service/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "16263af7d38ff3b8",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/tests/test_graph_hitl.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "16ac31848e612b71",
+      "repo": "freeisle/ragent",
+      "path": "resources/regression/agent-memory/MemoryTurnScript.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "176c52fe5f8ffa1c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "185c590f03ffbaf0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/lib/source.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "18964e21b5765450",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "189bc48e3fcc0a68",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "18f1ff8becd84e53",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "199abaca4c29f3a7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "19b364dab662675c",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/graph/state.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "19fc58ea1c8b955e",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "1ab5988c0cf79a5c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/types/agent.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "1c4a04a99e96d469",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/parser/mineru/BatchSubmitRequest.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "1c61429eaaa3de59",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/utils/time.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "1ce7253e27a3ce04",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "1d5f99b9a97aba45",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/dto/RecommendedQuestionsPayload.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "1f2fa77e7d27d8c3",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/alert-dialog.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "1f32b54f67aed9fa",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "203bb83fc1c6495a",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkDraft.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "2061e3ce66cc49ee",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/select.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "20e3f04aa7433503",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "238da8da0784d28e",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/router/index.js",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "2403a9d002d2d907",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "24435d895f0839a2",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/constants/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "24d233d193898dc8",
+      "repo": "freeisle/12306",
+      "path": "console-vue/vue.config.js",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "258144067ba90c3d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "26ea0474424b3b40",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "295d5523453f7bb8",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "2a43d6f3cf61bea8",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/tools/github_tools.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "2bc6b9a3acc47a85",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "2c241334b5901652",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/VectorTarget.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "2c294188d492ea1c",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/config.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "2d19e18414609fdc",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "2dc8f6c93a75bd11",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkDraft.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "2e3658343bc78943",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/tools/waitlist_tools.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "2e85c28ab6945f49",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/select.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "30f670fa91b6f988",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/parser/mineru/BatchSubmitRequest.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3104859de40cc76f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/agentService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3186130380fca1ec",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "330f6a1292a5a1ed",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "33c61ef8713fce82",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "342df75f06c32e89",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dropdown-menu.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "348602766ed1c697",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/constants/index.js",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "34a55d2e81fd58b2",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "34b45458111f8734",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "35227d804a262e05",
+      "repo": "freeisle/12306",
+      "path": "frameworks/log/src/main/java/org/opengoofy/index12306/framework/starter/log/annotation/ILog.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "36e198c9b9cd020f",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/constants/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "37b37676dbfb0467",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "388901f164ebdadf",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/ingestionService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "38ad15fceb6ce384",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "399c49be85c03c56",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/bizChangeLogService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "39d1cec42cfb3e90",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3a8760756fdc5201",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dialog.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "3adfeab18a987120",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "3b01ff64ef5ea042",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/agent/AgentChatInput.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3b898e25e69a12ee",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3b9eb2e6fc71e191",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3be42fe216dafd9c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3cd35cf4cf42f8b0",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/workers/solver.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "3ddbda409a2fc061",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3dfeb35cc47c8575",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/agentProfileService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "3e58ff8f6af0da85",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "3ebbf68c3cadfd84",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "404eabfe26c87f8c",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/chunkers.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "413c8db621dd167b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "423f5aef8d5d3338",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/traceUtils.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "44c8e42dacfd8a06",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "45e276af4a227d57",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/intentTreeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "46658dc0c3c2aa69",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/graph/reflector.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "469e2cdb141a13ec",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/lib/source.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "47b8817c45b031ec",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "4896dedab1322c24",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "48b0eb6778f37177",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "48fd5e855417aecd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/form.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "4943881a4319ffdd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dropdown-menu.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "4a392ee93b66cab7",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/EmbeddedChunk.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "4ad2e875acfc0eb0",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/tools/client.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "4af660dd0ad5b155",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/controller/vo/IngestionSpecSchemaVO.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "4b65874b7577c0e4",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "4b830483f4a94f1d",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "4c3c961e69f45c4b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "4c7c79afe700f2c8",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "536d7be75ed19c3a",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "54e59b6cdb633339",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/alert-dialog.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "55429666ff173eff",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkMetadata.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "55d9a65881473b42",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/parser/model/ParsedDocument.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "5650cc36ef579087",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dropdown-menu.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "56846f68b50db760",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "56d8f9dd86a0b7da",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "589c03c815f35211",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "5964f9c429786685",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/DocumentRef.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "59eab3e96f4d0071",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "5a6c6b8f8edece9a",
+      "repo": "freeisle/ragent",
+      "path": "framework/src/main/java/com/nageoffer/ai/ragent/framework/validation/ChatQuestion.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "5aa6e1ee3f80a2e0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/form.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "5b7dffa3420a5da9",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "5c79cc43e911e5cf",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/ScopeQuota.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "5cd6a2cad9f9e5d7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "5d13aa0f3f5d770d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "5ee6f2da785edb96",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/router/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "60a12814a41c1b74",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6151c775cba8b4e6",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "61cef3ffe54b96b0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/ChatInput.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6239cde430f14f6f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/AgentChatPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "634125a9f7e32817",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "634d29e6c1acf343",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "63c0abd68f27f4c2",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/SourcesPanel.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6473399d620b34bb",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/types/index.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "648af4e622ab4eba",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/DocumentRef.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "654cd2d64513195d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/tabs.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "655c6f1cb62b5e6b",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "65c370c8a94f883c",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "65e6f4a2113567c0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/ChatInput.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6611ffe3f517ce58",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/tools/registry.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "663cf5269ca302d8",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "668c47a8ee00fe41",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/memory/long_term.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "697308fdad55f93a",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/cli.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "6a3fe1bb9c7456b5",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/RagTracePage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6a66f413c1efdec6",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "6d4c544ed03c01ec",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/select.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6db6ba8824809d98",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6df25bcc5f68c614",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/parser/model/ParsedDocument.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "6e89042a904b5c31",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/IngestionOutcome.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "6ead5badde31354f",
+      "repo": "freeisle/12306",
+      "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/MQIdempotent.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "6f5988304d7536da",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6f99f8ca432034e9",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "6f9a16b06e85db82",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7050fb9400fe177e",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dropdown-menu.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "70f5fb2b41623bd3",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/types/index.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "7122950f21c5ac9b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "718da08f0d93b57b",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/planning/waitlist_scorer.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "7229ad453d1246cf",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/table.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "72acb087010c8b09",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/select.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "72ce28ea3715a6ee",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/card.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "73c61cd9db8db514",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/RagTracePage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "73c933c7e31763ac",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/main.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "73f61be18a114e46",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "743e92f2f52bd8ab",
+      "repo": "freeisle/12306",
+      "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/RestAPIIdempotent.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7522083c3fbabeda",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "75dc0385a758a25b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "76169068760838fe",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "767800848c1848ee",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/agent/AgentChatInput.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "76cfdd3914c4a4d7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "76daaf952ef9c416",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/button.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "771e86475f70075f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "776c7e12a8d36082",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/tools/ticket_tools.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "7775d14f4680862a",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "779edd8d0be082d3",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/ChatInput.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "78945acd506df17c",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/workers/triage.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "78d3b1e78ef724dd",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "7900f191e8bb7bab",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkMetadata.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "796adcef3c282644",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "797e30e317b74526",
+      "repo": "freeisle/12306",
+      "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/Idempotent.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "79df379ff20fdf77",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7b192fe4ccee8128",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/server.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "7bbe4157c71d8191",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/knowledge/controller/vo/IngestionSpecSchemaVO.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7c49ca71ca067a14",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/utils/time.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "7ce53078bbc6dbc3",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7d4e46e7c8f001c6",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7da041934c8f9a82",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "7e0e918dd6e6164d",
+      "repo": "freeisle/ragent",
+      "path": "framework/src/main/java/com/nageoffer/ai/ragent/framework/validation/ChatQuestion.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7e2a08ff9bf535bd",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/IngestionSpec.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "7f077bc48f337d27",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "80449f4b00d224d9",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/state.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "80b1b22ee032beb3",
+      "repo": "freeisle/12306",
+      "path": "console-vue/vue.config.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8239816c69bff3ea",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "826cabf0e589e6cf",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "83346e6aff2e2000",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "83c648b3c8c0843b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8507c9828a489b6d",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkBudget.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "856c190ef3aa9e4f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "85cd09f61dc16762",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "865007af91c0138a",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "868678f99c039a96",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/mcp/McpExtractionResult.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "868dd0c7cde3d118",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8705e5fcd5a910ad",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/tabs.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "87483f899b0ba8fb",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "87b9cac9947cf3c3",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "89d3723508a73760",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "89dcff02cc747b9f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8a29a6fd65231fc9",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/main.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "8a6d0fe38cbe770f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8ab592dbc4037180",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/graph/supervisor.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "8abed3df7da2a66a",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8b106fd3ba9ca8b6",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/bizChangeLogService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8b50f3c6dd3442ba",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/ragTraceService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8ba9c7636a024334",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8c9d9b314772385e",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/RetrievalBudget.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8d03faf9d08a4142",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/indexer.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "8de095e714f51859",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8e3036e134aebfda",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/SourcesPanel.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "8e690f553b140f26",
+      "repo": "freeisle/ragent",
+      "path": "resources/regression/agent-memory/MemoryTurnScript.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8ea36763f7b4c0cd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8edd7834fd7ff026",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "8f80e9b9a4683112",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "905641410df7bc02",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "90c5efa2999fd669",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "916945b803dcd392",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/RetrievalScope.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "91eaa045be1c4aac",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/alert-dialog.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "924fa52e41c0341b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "9299b211d320fe24",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "93349ebae5412f36",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/skills/loader.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "93540978b85f06ca",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/alert-dialog.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "939ad8621f1f0e53",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkBudget.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "94045222a45d8ded",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/button.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "945c8ea8e5a294c4",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/table.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "969bb86fe9f552ce",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/dashboardService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "96b25dcbf5f28c5d",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/memory/short_term.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "985cc77e6d295b55",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/VectorTarget.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "9890ea25d011b6d0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/LoginPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "98b353a81f7ab870",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "99accd8b7a3be39a",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "99f9ee2c07074924",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "9b265545d32dfe90",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "9bf2fda18a361039",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "9ec33578d425828e",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "9fa9689399c0426a",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/KnowledgeRetrievalResult.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a0278b881d4b4b54",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a0ca5269eb2af346",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/tests/test_waitlist_tool.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "a2b3ccda3b3e509d",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/reranker.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "a3265955bd51b4fd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a3b6e74f2d7d9633",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/card.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "a445a53149268776",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a5c0928f1e996fc8",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "a67da778b525481d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/SourcesPanel.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a6a4e75fd273e407",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/service/index.js",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "a736a2ae10141375",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/query-term-mapping/QueryTermMappingPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a79889c9db99e3ce",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/Chunk.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "a84016e9281d9b65",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a88734ef08f1be52",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a8c7c53b19b35647",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/RetrievalBudget.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "a8c983596ed41a82",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "a8cb6280839db4c9",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a94d8abdf28e7df7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "a97cb6c9f3fd2ba9",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "aa0bf464ad918c8c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/DocPreviewPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "aabfb9d3785540af",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/form.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "abb5bcb71f060dc0",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/button.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "ac4cd17994768a11",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "aeae725d32d03e70",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/select.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "aec3edf5c4174b33",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/alert-dialog.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "af1730f52a677df5",
+      "repo": "freeisle/ragent",
+      "path": "resources/regression/agent-memory/MemoryTurnScript.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "af1af7030a55f3e5",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "af7a842e108e039f",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "aff846a075a7430d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b007eceff086cec7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b097510c3d2f764d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b10037da1e03d76b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b1a00be6d4c7c7a1",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/RagTracePage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "b2352955492cb646",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b2b5cf29d4e321ae",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b2d37e970259dbfc",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b376be16242c4895",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/service/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b57c319a2b8f3b88",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "added",
+      "new_kind": "method"
+    },
+    {
+      "id": "b7ded194e32fa777",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b8140876686ccb01",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "b8b99e8d7ada99e7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "ba6e44385399234b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "bd63df83451fd3d3",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dialog.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "bd714e788857bd75",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/KnowledgeRetrievalResult.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c000dd232e8e0b5b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c0c2964fd2c1886a",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/select.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c0ea1c92b4b7c6d4",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c125254398050c0b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/settingsService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c13a664c22bdae97",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/traceUtils.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c243b8cb83d8a727",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/LoginPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c294b04a588046f4",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/select.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c2a1d0f7b27fe816",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c2b03bc9f7870abe",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c3f8a942fa5f2288",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/dto/RecommendedQuestionsPayload.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c538f9938c43c3d3",
+      "repo": "freeisle/12306",
+      "path": "frameworks/idempotent/src/main/java/org/opengoofy/index12306/framework/starter/idempotent/annotation/Idempotent.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "c575b866de9d8a30",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/lib/source.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c5b0c07fd95f2264",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c5f7dc8042ca3ef1",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c76beb7a23554025",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c7c2733eeb82d038",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "c7ce99f2e8cfc95d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c7d882deca43b647",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/ingestionService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "c801ba9b4fa8e307",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "ca62fe9f703213ae",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/query_rewriter.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "ca9402b40373bd2b",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/embedder.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "cad9d9d38dba7651",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "cb67b1ebe4fe694d",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/config/validation/ValidMemoryConfig.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "cc71808139a72a39",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "cc8c29e1a4073d1c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/RagTracePage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "ccea09b0c3a803f2",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/graph.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "cd7511d0c567edfd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/ChatInput.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "cd775e7cbbcd8ad1",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkMetadata.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "ce9a7566cb45daa0",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/Chunk.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "ceb553df3874376f",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/ScopeQuota.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "cf29819f3e05654e",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/models/llm.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "cf5890292a49229d",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkBudget.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "d03c8d244ef40f7f",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/config/validation/ValidMemoryConfig.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "d04b1009d2041150",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d052150789ba2fb7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/WelcomeScreen.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d12badf8045fd312",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/app/tools/order_tools.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "d161c7d8cebecfb4",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d1bc5ac4b622cac3",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/dedup.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "d2d5a80c53310369",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d6bcc7123f69a13a",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/alert-dialog.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "d736811c6becd427",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/traces/RagTracePage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d771f96cdee237c8",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d7ea506b326e882b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/select.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "d8b1b55f83e51957",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/sample-questions/SampleQuestionPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d8b747ade22abbf9",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dropdown-menu.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d923bbe1bd043e90",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/card.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d934e062441ce4f8",
+      "repo": "freeisle/12306",
+      "path": "frameworks/log/src/main/java/org/opengoofy/index12306/framework/starter/log/annotation/ILog.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "d93c3b7da40985f2",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/IngestionOutcome.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "dac83d8c1242c4ae",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/tools/selector.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "dd8f90ffe05b759c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/dashboardService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "de1c36f45d8ccb15",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "dfba25778d195a1c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/knowledgeService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "dffd05ae0ec709d5",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/settingsService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "e0c8a9869349b8f8",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/mcp/McpExtractionResult.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "e2621c6634518414",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/graph/GraphFileSource.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e2cf138fac0e4068",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/button.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e32602c519a74e3d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e480208fbd0aa767",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/channel/RetrievalScope.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e4808d5bde00a1e9",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/card.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e6a7c93eb2c58b7b",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/form.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e93a2bd6a5f9372d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/dialog.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "e9cebe70470e2acb",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "eae79fb89bf0dfaf",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/AgentChatPage.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "eb1a79514643fa19",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "ebb2108b2b950a9e",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/graph/GraphFileSource.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "ec88811a82b00ad4",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/agents/AgentPromptPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "ecd6292e57fc0710",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/ingestionService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "ed6cfc896ea81497",
+      "repo": "freeisle/12306",
+      "path": "ai-agent-py/tests/test_waitlist_scorer.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "ed934011efca323c",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/ui/form.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "eebc4b7b6aa4d360",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/tools/github_client.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "ef6c04ab237d2df2",
+      "repo": "freeisle/ragent",
+      "path": "frontend/@/components/ui/table.tsx",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "efe2ecf15c214973",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/knowledge/KnowledgeListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f01042fd7f464cdd",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/components/chat/ChatInput.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f29005f29aaabecb",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkBudget.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f2aa827e7fd40a08",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/ChunkDraft.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f32e44d478e38791",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/settingsService.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f3b7a878fda57c3d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/api.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "f3f472080ff362bb",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/intent-tree/IntentEditPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f5bfb85a1937812b",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/rag/retriever.py",
+      "kind": "removed",
+      "new_kind": null
+    },
+    {
+      "id": "f7f497d9572461a7",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/intentTreeService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "f96ffaf2e9d618a6",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/chunk/model/EmbeddedChunk.java",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f9b72c67271565db",
+      "repo": "freeisle/12306",
+      "path": "console-vue/src/router/index.js",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "f9e0ee962dbaff2e",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/core/ingest/IngestionSpec.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "fac9ed331531577d",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/dto/CompletionPayload.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "fb6077075fc11e77",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "fb6ced6d86983952",
+      "repo": "local/maintainer-copilot",
+      "path": "src/maintainer_copilot/metrics/adoption.py",
+      "kind": "added",
+      "new_kind": "module_doc"
+    },
+    {
+      "id": "fb71724bf0b0cf06",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/types/agent.ts",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "fc8f810faa9df4c0",
+      "repo": "freeisle/ragent",
+      "path": "rag/src/main/java/com/nageoffer/ai/ragent/rag/core/retrieval/KnowledgeRetrievalResult.java",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "fcf2cb9e6e962f78",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/services/agentService.ts",
+      "kind": "changed",
+      "new_kind": null
+    },
+    {
+      "id": "fd01bba3ea8a2d5d",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/dashboard/DashboardPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    },
+    {
+      "id": "febc8f9affd58342",
+      "repo": "freeisle/ragent",
+      "path": "frontend/src/pages/admin/users/UserListPage.tsx",
+      "kind": "added",
+      "new_kind": null
+    }
+  ],
+  "added_kinds": {
+    "fallback": 250,
+    "module_doc": 41,
+    "method": 9
+  },
+  "legacy_source_reconstruction": {
+    "chunker_ref": "384a302435bd88d6d9abe0d9476aac98f6448c5c",
+    "rows": 6349,
+    "content_multiset_equal": false,
+    "only_frozen_source": 6,
+    "only_original": 6,
+    "differing_source_paths": [
+      [
+        "local/maintainer-copilot",
+        "src/maintainer_copilot/rag/retriever.py"
+      ]
+    ]
+  },
+  "target_source_coverage": [
+    {
+      "id": "ret-004",
+      "targets": [
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/engine/IngestionEngine.java",
+          "planned_chunks": 9
+        },
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/FetcherNode.java",
+          "planned_chunks": 4
+        },
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/ParserNode.java",
+          "planned_chunks": 12
+        },
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/ChunkerNode.java",
+          "planned_chunks": 5
+        },
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/EnricherNode.java",
+          "planned_chunks": 9
+        },
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/EnhancerNode.java",
+          "planned_chunks": 10
+        },
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/ingestion/node/IndexerNode.java",
+          "planned_chunks": 9
+        }
+      ]
+    },
+    {
+      "id": "ret-007",
+      "targets": [
+        {
+          "path": "rag/src/main/java/com/nageoffer/ai/ragent/admin/service/impl/DashboardServiceImpl.java",
+          "planned_chunks": 60
+        },
+        {
+          "path": "frontend/src/services/dashboardService.ts",
+          "planned_chunks": 2
+        }
+      ]
+    },
+    {
+      "id": "ret-014",
+      "targets": [
+        {
+          "path": "ai-agent-py/app/tools/order_tools.py",
+          "planned_chunks": 9
+        }
+      ]
+    }
+  ],
+  "note": "Planned/source-side evidence only. Fixed Git refs do not prove historical working trees were clean; baseline has six different local retriever fragments. Full new vectors and quality comparison require completed generation.",
+  "audited_with_code_sha": "eb7abca634b53b0e77e8d4e8f38744d19eb37dab"
+}

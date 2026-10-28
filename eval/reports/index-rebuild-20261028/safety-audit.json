@@ -1,0 +1,42 @@
+{
+  "business": {
+    "rows": 7198,
+    "fingerprint": "d027f83a162fb83b56522a103e599384"
+  },
+  "evaluation": {
+    "rows": 6349,
+    "fingerprint": "193f42dc5c5d302242a385727b3fcbfc"
+  },
+  "partial": {
+    "rows": 68,
+    "valid_hashes": 68,
+    "dimension": 1024,
+    "self_vector_sql_verified": true,
+    "query_scope": "freeisle/ragent",
+    "created_at": "2026-10-28 10:04:08.318160+00:00",
+    "first_embedded_at": "2026-10-28 10:04:28.175322+00:00",
+    "last_embedded_at": "2026-10-28 10:10:48.210245+00:00",
+    "committed_build_window_seconds": 399.892085,
+    "per_repo": [
+      [
+        "freeisle/12306",
+        23
+      ],
+      [
+        "freeisle/ragent",
+        39
+      ],
+      [
+        "local/maintainer-copilot",
+        6
+      ]
+    ],
+    "storage_bytes": 1138688,
+    "peak_observed_rss": 1598185472,
+    "peak_observed_private_bytes": 3383361536
+  },
+  "active": "legacy-v1",
+  "state": "building",
+  "complete": false,
+  "audited_with_code_sha": "eb7abca634b53b0e77e8d4e8f38744d19eb37dab"
+}
